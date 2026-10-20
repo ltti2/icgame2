@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IceCoast.Simulation.Buildings;
 using IceCoast.Simulation.Core;
 using IceCoast.Simulation.Guests;
 using IceCoast.Simulation.Land;
@@ -28,6 +29,8 @@ namespace IceCoast.Simulation
         public readonly List<Run> Runs = new List<Run>();
         public readonly List<TrailLight> Lights = new List<TrailLight>();
         public readonly List<ParkingLot> ParkingLots = new List<ParkingLot>();
+        /// <summary>Buildings on walking areas (Waffle Cabins).</summary>
+        public readonly List<Building> Buildings = new List<Building>();
         /// <summary>
         /// The access road, as a polyline of tile coordinates from its far end (in the scenery, beyond the map
         /// edge) to where it meets the parking lot. Cars drive along it.
@@ -52,6 +55,7 @@ namespace IceCoast.Simulation
         public int NextRunId = 1;
         public int NextLightId = 1;
         public int NextLotId = 1;
+        public int NextBuildingId = 1;
 
         /// <summary>
         /// Player switch: run a night session on lifts that serve lit trails, with the trail lights on after
@@ -71,6 +75,8 @@ namespace IceCoast.Simulation
         public int WalkingVersion;
         /// <summary>Bumped when parking lots or the road change.</summary>
         public int ParkingVersion;
+        /// <summary>Bumped when buildings are added, removed, opened, closed or repriced.</summary>
+        public int BuildingsVersion;
 
         public WorldState(int width, int height, int maxGuests, ulong seed)
         {

@@ -32,7 +32,7 @@ namespace IceCoast.View.Tools
             };
         }
 
-        /// <summary>Order = hotkeys 1..8 and toolbar order.</summary>
+        /// <summary>Order = hotkeys 1..9 and toolbar order.</summary>
         private static ToolBase[] CreateTools()
         {
             var tools = new ToolBase[]
@@ -45,6 +45,7 @@ namespace IceCoast.View.Tools
                 new ClearTreesTool(),
                 new WalkingAreaTool(),
                 new TrailLightTool(),
+                new BuildBuildingTool(),
             };
             for (int i = 0; i < tools.Length; i++) tools[i].Hotkey = (i + 1).ToString();
             return tools;
@@ -114,6 +115,7 @@ namespace IceCoast.View.Tools
             if (GameInput.Pressed(GameKey.Tool6)) Activate(Tools[5]);
             if (GameInput.Pressed(GameKey.Tool7)) Activate(Tools[6]);
             if (GameInput.Pressed(GameKey.Tool8)) Activate(Tools[7]);
+            if (GameInput.Pressed(GameKey.Tool9)) Activate(Tools[8]);
             if (GameInput.Pressed(GameKey.Cancel)) Cancel();
             if (GameInput.Pressed(GameKey.Pause)) runner.TogglePause();
             if (GameInput.Pressed(GameKey.SpeedUp)) runner.Faster();

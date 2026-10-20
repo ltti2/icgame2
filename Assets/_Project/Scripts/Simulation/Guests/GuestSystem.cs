@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using IceCoast.Simulation.Buildings;
+using IceCoast.Simulation.Config;
 using IceCoast.Simulation.Core;
 using IceCoast.Simulation.Events;
 using IceCoast.Simulation.Finance;
@@ -83,6 +85,9 @@ namespace IceCoast.Simulation.Guests
                         if (queuedFor != null && queuedFor.IsRunning) pool.StateTimer[i]++;
                         break;
                     case GuestState.Resting: TickMeandering(i); break;
+                    case GuestState.WalkingToFood: TickWalkingToFood(i); break;
+                    case GuestState.WaitingForFood: TickWaitingForFood(i); break;
+                    case GuestState.Eating: TickEating(i); break;
                     case GuestState.Skiing: TickSkiing(i); break;
                     case GuestState.Leaving: TickLeaving(i); break;
                 }
@@ -133,10 +138,18 @@ namespace IceCoast.Simulation.Guests
             else pool.Warmth[g] = SimMath.AddClamped(pool.Warmth[g], 1);
             if (pool.Warmth[g] < 30) AddHappiness(g, -0.15f);
 
-            if (pool.State[g] == GuestState.Queueing)
+            if (pool.State[g] == GuestState.Queueing || pool.State[g] == GuestState.WaitingForFood)
             {
                 float waited = pool.StateTimer[g] / TicksPerMinute;
                 if (waited > 5f) AddHappiness(g, -0.2f);
+            }
+
+            // Hunger builds up through the day (not while eating).
+            if (pool.State[g] != GuestState.Eating)
+            {
+                int interval = Math.Max(1, _sim.Config.Guests.NeedsUpdateIntervalTicks);
+                int every = Math.Max(1, SimMath.RoundToInt(_sim.Config.Food.HungerMinutesPerPoint * TicksPerMinute / interval));
+                if ((_sim.World.Tick / interval + g) % every == 0 && pool.Hunger[g] < 100) pool.Hunger[g]++;
             }
 
             bool closingSoon = time.MinuteOfDay >= _sim.TimeSystem.ClosingMinute - 15;
@@ -204,6 +217,9 @@ namespace IceCoast.Simulation.Guests
                 StartLeaving(g);
                 return;
             }
+
+            // Hungry? Grab a waffle first if there's a cabin in reach at a price they'll pay.
+            if (!leaving && TryGoForFood(g, here)) return;
 
             // Early birds: wander the base until it's time to line up.
             if (atBase && !leaving && BeforeLineUp)
@@ -418,6 +434,174 @@ namespace IceCoast.Simulation.Guests
                 pool.StateTimer[g] = 0;
                 _sim.LiftSystem.Enqueue(lift, g);
             }
+        }
+
+        // =====================================================================
+        // Food
+        // =====================================================================
+
+        /// <summary>
+        /// A hungry guest looks for an open food building in walking reach (or anywhere on the walking area
+        /// they're standing on) with a short enough line. The hungrier they are the more likely they go now
+        /// rather than after another run. They only buy at a price they're willing to pay.
+        /// </summary>
+        private bool TryGoForFood(int g, Int2 here)
+        {
+            var pool = Pool;
+            var food = _sim.Config.Food;
+            var buildings = _sim.World.Buildings;
+            if (buildings.Count == 0 || pool.Hunger[g] < food.HungryThreshold) return false;
+
+            var system = _sim.BuildingSystem;
+            var zone = _sim.WalkingAreaSystem.ZoneNear(here, WalkZoneReach);
+            bool atBase = _sim.RunSystem.IsAtBase(here);
+            Building best = null;
+            float bestScore = float.NegativeInfinity;
+            foreach (var b in buildings)
+            {
+                if (!system.IsServing(b)) continue;
+                var def = system.Def(b);
+                float walk = DistanceTo(g, b.WindowX, b.WindowY);
+                var cabinZone = _sim.WalkingAreaSystem.ZoneAt(b.Origin.X, b.Origin.Y);
+                bool sameZone = zone != null && cabinZone == zone;
+                bool inBaseVillage = atBase && cabinZone != null && cabinZone.IsBase; // the base village is one place
+                if (walk > food.FoodWalkRadius && !sameZone && !inBaseVillage) continue;
+                float wait = system.EstimatedWaitMinutes(b);
+                if (wait > food.MaxWaitMinutes || b.Queue.Count >= def.MaxQueue) continue;
+                float score = -walk * 0.1f - wait * 0.3f - b.Price * 0.05f;
+                if (score > bestScore) { bestScore = score; best = b; }
+            }
+            if (best == null) return false;
+
+            float hunger = SimMath.InverseLerp(food.HungryThreshold, 100f, pool.Hunger[g]);
+            if (!Rng.Chance(0.35f + 0.65f * hunger)) return false; // one more run first
+
+            if (!system.WillingToPay(best, g))
+            {
+                if ((pool.Flags[g] & GuestFlags.PricedOutOfFood) == 0)
+                {
+                    pool.Flags[g] |= GuestFlags.PricedOutOfFood;
+                    best.PricedOutToday++;
+                }
+                return false;
+            }
+
+            pool.State[g] = GuestState.WalkingToFood;
+            pool.TargetId[g] = best.Id;
+            pool.StateTimer[g] = 0;
+            return true;
+        }
+
+        private void TickWalkingToFood(int g)
+        {
+            var pool = Pool;
+            var b = _sim.BuildingSystem.GetBuilding(pool.TargetId[g]);
+            if (b == null || !_sim.BuildingSystem.IsServing(b))
+            {
+                DecideNext(g);
+                return;
+            }
+            BuildingSystem.QueueSpot(b, b.Queue.Count, out float tx, out float ty);
+            if (MoveToward(g, tx, ty, TravelSpeed(g, tx, ty, WalkSpeedPerTick), 0.3f))
+            {
+                pool.State[g] = GuestState.WaitingForFood;
+                pool.StateTimer[g] = 0;
+                _sim.BuildingSystem.Enqueue(b, g);
+            }
+        }
+
+        private void TickWaitingForFood(int g)
+        {
+            var pool = Pool;
+            var b = _sim.BuildingSystem.GetBuilding(pool.TargetId[g]);
+            if (b == null)
+            {
+                DecideNext(g);
+                return;
+            }
+            pool.StateTimer[g]++;
+            int slot = _sim.BuildingSystem.QueuePosition(b, g);
+            if (slot < 0) return;
+            BuildingSystem.QueueSpot(b, slot, out float tx, out float ty);
+            MoveToward(g, tx, ty, WalkSpeedPerTick * 0.6f);
+        }
+
+        /// <summary>The window served this guest: they paid, and now they eat somewhere nearby.</summary>
+        public void OnServedFood(int g, Building b, float happiness, BuildingDefinition def)
+        {
+            var pool = Pool;
+            float waited = pool.StateTimer[g] / TicksPerMinute;
+            if (waited > 8f) AddHappiness(g, -(waited - 8f) * 0.25f);
+            AddHappiness(g, happiness);
+            pool.Hunger[g] = 0;
+            pool.Flags[g] &= ~GuestFlags.PricedOutOfFood;
+            pool.State[g] = GuestState.Eating;
+            pool.StateTimer[g] = Math.Max(1, SimMath.RoundToInt(def.EatMinutes * TicksPerMinute));
+            pool.Energy[g] = (byte)Math.Min(100, pool.Energy[g] + Math.Max(0, def.EnergyRestore));
+            pool.WaypointKey[g] = PickEatingSpot(g, b);
+        }
+
+        /// <summary>A walkable tile beside the building to stand and eat on (or the window, if there is none).</summary>
+        private int PickEatingSpot(int g, Building b)
+        {
+            for (int tries = 0; tries < 10; tries++)
+            {
+                int x = b.Origin.X + Rng.Range(-2, b.Width + 3), y = b.Origin.Y + Rng.Range(-2, b.Height + 3);
+                if (b.Covers(x, y) || !Map.IsWalkable(x, y) || Map.GetOccupant(x, y) != 0) continue;
+                return Map.TileKey(x, y);
+            }
+            int wx = SimMath.Clamp((int)b.WindowX, 0, Map.Width - 1), wy = SimMath.Clamp((int)b.WindowY, 0, Map.Height - 1);
+            return Map.TileKey(wx, wy);
+        }
+
+        private void TickEating(int g)
+        {
+            var pool = Pool;
+            if (pool.WaypointKey[g] >= 0)
+            {
+                var spot = Map.FromTileKey(pool.WaypointKey[g]);
+                // Stand somewhere on the tile rather than all on its centre.
+                float jx = (SimRandom.Hash01(g, spot.X, 31) - 0.5f) * 0.6f, jy = (SimRandom.Hash01(g, spot.Y, 37) - 0.5f) * 0.6f;
+                MoveToward(g, spot.X + 0.5f + jx, spot.Y + 0.5f + jy, WalkSpeedPerTick * StrollSpeedFactor);
+            }
+            if (--pool.StateTimer[g] > 0) return;
+            pool.WaypointKey[g] = -1;
+            DecideNext(g);
+        }
+
+        /// <summary>The building closed, was knocked down, or the guest ran out of money at the window.</summary>
+        public void OnFoodUnavailable(int g, Building b)
+        {
+            var pool = Pool;
+            if (g < 0 || g >= pool.HighWater || !pool.Alive[g]) return;
+            if (pool.State[g] != GuestState.WaitingForFood && pool.State[g] != GuestState.WalkingToFood) return;
+            if (pool.TargetId[g] != b.Id) return;
+            AddHappiness(g, -2f);
+            pool.State[g] = GuestState.ChoosingRun;
+            pool.TargetId[g] = 0;
+            DecideNext(g);
+        }
+
+        public void OnBuildingRemoved(int buildingId)
+        {
+            var pool = Pool;
+            for (int i = 0; i < pool.HighWater; i++)
+            {
+                if (!pool.Alive[i] || pool.TargetId[i] != buildingId) continue;
+                var s = pool.State[i];
+                if (s == GuestState.WalkingToFood || s == GuestState.WaitingForFood)
+                {
+                    pool.State[i] = GuestState.ChoosingRun;
+                    pool.TargetId[i] = 0;
+                    DecideNext(i);
+                }
+            }
+        }
+
+        private float DistanceTo(int g, float x, float y)
+        {
+            float dx = x - Pool.PosX[g], dy = y - Pool.PosY[g];
+            return (float)Math.Sqrt(dx * dx + dy * dy);
         }
 
         // =====================================================================
@@ -860,6 +1044,8 @@ namespace IceCoast.Simulation.Guests
 
             var exit = run.Exits[chosen];
             LeaveRun(g, run);
+            // Off the run beside a lift: a hungry guest may grab a waffle first if a cabin is close by.
+            if (!leaving && exit.Kind == RunExitKind.Lift && TryGoForFood(g, CurrentTile(g))) return true;
             if (exit.Kind == RunExitKind.Lift) WalkTo(g, _sim.World.GetLift(exit.TargetId));
             else StartRun(g, _sim.World.GetRun(exit.TargetId), exit.JoinTile);
             return true;

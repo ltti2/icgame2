@@ -163,6 +163,7 @@ namespace IceCoast.View.UI
             var s = view.ClickScreenPosition;
             var near = new Vector2(s.x, Screen.height - s.y) / _ui.Scale;
             if (view.SelectedLiftId != 0) _game.OpenLift(view.SelectedLiftId, near);
+            else if (view.SelectedBuildingId != 0) _game.OpenBuilding(view.SelectedBuildingId, near);
             else if (view.SelectedRunId != 0)
             {
                 _game.OpenRun(view.SelectedRunId, near);

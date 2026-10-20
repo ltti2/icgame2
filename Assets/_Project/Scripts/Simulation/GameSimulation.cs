@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IceCoast.Simulation.Buildings;
 using IceCoast.Simulation.Commands;
 using IceCoast.Simulation.Config;
 using IceCoast.Simulation.Core;
@@ -29,7 +30,7 @@ namespace IceCoast.Simulation
     ///   1. time, weather and daylight (dark? lights on?)
     ///   2. economy events (arrivals, cars parking, hourly costs)
     ///   3. lifts (status, loading, riders)
-    ///   4. guests
+    ///   4. guests, then food windows serving them
     ///   5. vehicles and staff (future)
     ///   6. snow (chunk-staggered), run stats
     ///   7. end-of-day bookkeeping and notifications
@@ -53,6 +54,7 @@ namespace IceCoast.Simulation
         public EconomySystem EconomySystem { get; }
         public LiftSystem LiftSystem { get; }
         public GuestSystem GuestSystem { get; }
+        public BuildingSystem BuildingSystem { get; }
         public SnowSystem SnowSystem { get; }
         public RunSystem RunSystem { get; }
 
@@ -84,6 +86,7 @@ namespace IceCoast.Simulation
             EconomySystem = new EconomySystem(this);
             LiftSystem = new LiftSystem(this);
             GuestSystem = new GuestSystem(this);
+            BuildingSystem = new BuildingSystem(this);
             SnowSystem = new SnowSystem(this);
             RunSystem = new RunSystem(this);
 
@@ -102,6 +105,7 @@ namespace IceCoast.Simulation
                 EconomySystem,
                 LiftSystem,
                 GuestSystem,
+                BuildingSystem,
                 SnowSystem,
                 RunSystem,
             };

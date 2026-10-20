@@ -68,6 +68,9 @@ namespace IceCoast.View.Bootstrap
             var trailLights = CreateChild<TrailLightRenderer>("Trail Lights");
             trailLights.Initialize(Runner);
 
+            var buildings = CreateChild<BuildingRenderer>("Buildings");
+            buildings.Initialize(Runner);
+
             var cars = CreateChild<CarRenderer>("Cars");
             cars.Initialize(Runner, cam);
 
@@ -89,6 +92,9 @@ namespace IceCoast.View.Bootstrap
 
             var hud = CreateChild<GameHud>("HUD");
             hud.Initialize(Runner, View, tools, camController, guests, NewGame);
+
+            // Edit the PNGs in StreamingAssets/Art while playing and the game redraws them.
+            CreateChild<ArtHotReload>("Art Hot Reload");
         }
 
         private void Start() => NewGame(false);

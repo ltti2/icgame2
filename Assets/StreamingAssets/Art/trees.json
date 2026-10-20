@@ -1,0 +1,22 @@
+{
+  "sheet": "trees",
+  "note": "Single trees. Rows: spruce, fir, hardwood, each bare then snow-laden. Columns: two variants. Pivot: the base of the trunk. Each sprite's rectangle (x, y, w, h, from the top-left of the PNG) and pivot (inside the rectangle) are listed below. Draw inside the sprite's cell; drawing past its rectangle grows it. To shrink a sprite or move its pivot, edit the numbers here.",
+  "cellWidth": 17,
+  "cellHeight": 26,
+  "columns": 2,
+  "rows": 6,
+  "sprites": [
+    { "name": "tree_spruce_0_bare", "col": 0, "row": 0, "x": 3, "y": 2, "w": 11, "h": 22, "pivotX": 5, "pivotY": 21 },
+    { "name": "tree_spruce_1_bare", "col": 1, "row": 0, "x": 20, "y": 2, "w": 11, "h": 22, "pivotX": 5, "pivotY": 21 },
+    { "name": "tree_spruce_0_snowy", "col": 0, "row": 1, "x": 3, "y": 28, "w": 11, "h": 22, "pivotX": 5, "pivotY": 21 },
+    { "name": "tree_spruce_1_snowy", "col": 1, "row": 1, "x": 20, "y": 28, "w": 11, "h": 22, "pivotX": 5, "pivotY": 21 },
+    { "name": "tree_fir_0_bare", "col": 0, "row": 2, "x": 2, "y": 58, "w": 13, "h": 18, "pivotX": 6, "pivotY": 17 },
+    { "name": "tree_fir_1_bare", "col": 1, "row": 2, "x": 19, "y": 58, "w": 13, "h": 18, "pivotX": 6, "pivotY": 17 },
+    { "name": "tree_fir_0_snowy", "col": 0, "row": 3, "x": 2, "y": 84, "w": 13, "h": 18, "pivotX": 6, "pivotY": 17 },
+    { "name": "tree_fir_1_snowy", "col": 1, "row": 3, "x": 19, "y": 84, "w": 13, "h": 18, "pivotX": 6, "pivotY": 17 },
+    { "name": "tree_hardwood_0_bare", "col": 0, "row": 4, "x": 2, "y": 111, "w": 13, "h": 17, "pivotX": 6, "pivotY": 16 },
+    { "name": "tree_hardwood_1_bare", "col": 1, "row": 4, "x": 19, "y": 111, "w": 13, "h": 17, "pivotX": 6, "pivotY": 16 },
+    { "name": "tree_hardwood_0_snowy", "col": 0, "row": 5, "x": 2, "y": 137, "w": 13, "h": 17, "pivotX": 6, "pivotY": 16 },
+    { "name": "tree_hardwood_1_snowy", "col": 1, "row": 5, "x": 19, "y": 137, "w": 13, "h": 17, "pivotX": 6, "pivotY": 16 }
+  ]
+}

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Writes the code-drawn art to editable PNG sprite sheets (Assets/StreamingAssets/Art) without Unity.
+       Compiles the view's art code against a tiny UnityEngine shim (colours and maths only).
+       Usage: see ArtExport.cs -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../IceCoast.Simulation.csproj" />
+    <Compile Include="../../../Assets/_Project/Scripts/View/Rendering/Art/ArtSheets.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/View/Rendering/Art/ArtEnums.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/View/Rendering/Art/PixelCanvas.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/View/Rendering/Art/SpriteArt.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/View/Rendering/Art/LiftArt.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/View/Rendering/Art/PropArt.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/View/Rendering/Art/BuildingArt.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/View/Rendering/Art/TerrainDetailArt.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/View/UI/Toolkit/UiArt.cs" />
+    <Compile Include="../../../Assets/_Project/Scripts/View/UI/Toolkit/PixelArtData.cs" />
+    <Compile Include="UnityShim.cs" />
+    <Compile Include="ArtExport.cs" />
+  </ItemGroup>
+</Project>

@@ -49,13 +49,20 @@ namespace IceCoast.View.Rendering
         {
             _runner = runner;
             _runner.SimulationChanged += Bind;
+            WorldAtlas.LayoutChanged += OnAtlasLayoutChanged;
             if (_runner.Sim != null) Bind(_runner.Sim);
         }
 
         private void OnDestroy()
         {
             if (_runner != null) _runner.SimulationChanged -= Bind;
+            WorldAtlas.LayoutChanged -= OnAtlasLayoutChanged;
             DestroyBlocks();
+        }
+
+        private void OnAtlasLayoutChanged()
+        {
+            if (_sim != null) Bind(_sim);
         }
 
         private void Bind(GameSimulation sim)

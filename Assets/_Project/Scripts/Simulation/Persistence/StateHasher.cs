@@ -31,6 +31,7 @@ namespace IceCoast.Simulation.Persistence
                 h.Add(g.PosX[i]);
                 h.Add(g.PosY[i]);
                 h.Add(g.Happiness[i]);
+                h.Add(g.Hunger[i]);
                 h.Add(g.TargetId[i]);
                 h.Add(g.Car[i]);
             }
@@ -51,6 +52,15 @@ namespace IceCoast.Simulation.Persistence
                     h.Add(space.Timer);
                     h.Add(space.Color);
                 }
+
+            foreach (var b in w.Buildings)
+            {
+                h.Add(b.Id);
+                h.Add(b.Price);
+                h.Add(b.Queue.Count);
+                h.Add(b.ServiceTimer);
+                h.Add(b.SoldTotal);
+            }
 
             foreach (var lift in w.Lifts)
             {

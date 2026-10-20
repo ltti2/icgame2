@@ -21,6 +21,8 @@ namespace IceCoast.Simulation.Finance
         Terraforming,
         TreeClearing,
         Lawsuits,
+        /// <summary>Food buildings: ingredients for every sale, plus staff and power by the hour.</summary>
+        FoodService,
     }
 
     /// <summary>One day's books. Kept in History for graphs and reputation.</summary>

@@ -309,7 +309,8 @@ namespace IceCoast.Simulation.Parking
         public BaseLayout DefaultLayout()
         {
             var cfg = _sim.Config;
-            int sceneryRoad = Math.Min(cfg.Parking.RoadSceneryLength, Math.Max(0, cfg.Map.SceneryPadding - 2));
+            // The road runs on through the scenery to the very edge of the world, so it never dead-ends in view.
+            int sceneryRoad = Math.Max(0, cfg.Map.SceneryPadding - 1);
             return BaseLayout.For(_sim.Map.Width, _sim.Map.Height, _sim.World.ResortEntrance, cfg.Parking.DefaultLotCapacity, sceneryRoad);
         }
     }

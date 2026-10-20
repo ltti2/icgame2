@@ -130,7 +130,7 @@ namespace IceCoast.View.UI.Toolkit
         /// </summary>
         public static readonly string[] IconNames =
         {
-            "pause", "play", "fastforward", "save", "load", "settings", "inspect", "lift", "run", "buyland", "terraform", "trees", "resort", "finance", "liftlist", "runlist", "messages", "sun", "cloud", "snow", "rain", "close", "none", "difficulty", "depth", "quality", "wear", "temperature", "ownership", "contours", "pin", "newgame", "light", "walk", "scenic", "lighting",
+            "pause", "play", "fastforward", "save", "load", "settings", "inspect", "lift", "run", "buyland", "terraform", "trees", "resort", "finance", "liftlist", "runlist", "messages", "sun", "cloud", "snow", "rain", "close", "none", "difficulty", "depth", "quality", "wear", "temperature", "ownership", "contours", "pin", "newgame", "light", "walk", "scenic", "lighting", "waffle",
         };
 
         public static readonly string[][] Icons =
@@ -817,6 +817,25 @@ namespace IceCoast.View.UI.Toolkit
                 ".......kk.......",
                 "..o..........o..",
                 "................",
+                "................",
+            },
+            new[] // waffle
+            {
+                "................",
+                ".......kk.......",
+                "....kkkoykkk....",
+                "...koyyoyyoyk...",
+                "..kooooooooook..",
+                "..kyoyyoyyoyyk..",
+                "..kyoyyoyyoyyk..",
+                ".kooooooooooonk.",
+                ".kyyoyyoyyoyynk.",
+                "..kyoyyoyyoyyk..",
+                "..kooooooonnnk..",
+                "..kyoyyoyynyyk..",
+                "...koyyoyynyk...",
+                "....kkknnkkk....",
+                ".......kk.......",
                 "................",
             },
         };

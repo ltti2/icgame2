@@ -1,0 +1,18 @@
+{
+  "sheet": "lift_carriers",
+  "note": "Chairs and cabins on the cable. Rows: lift types that have one. Columns: empty, with riders (gondola faces in the windows; chair riders are drawn separately). Pivot: the grip on the cable. Each sprite's rectangle (x, y, w, h, from the top-left of the PNG) and pivot (inside the rectangle) are listed below. Draw inside the sprite's cell; drawing past its rectangle grows it. To shrink a sprite or move its pivot, edit the numbers here.",
+  "cellWidth": 37,
+  "cellHeight": 24,
+  "columns": 2,
+  "rows": 4,
+  "sprites": [
+    { "name": "carrier_fixedgripchair_empty", "col": 0, "row": 0, "x": 9, "y": 2, "w": 18, "h": 16, "pivotX": 9, "pivotY": 0 },
+    { "name": "carrier_fixedgripchair_full", "col": 1, "row": 0, "x": 46, "y": 2, "w": 18, "h": 16, "pivotX": 9, "pivotY": 0 },
+    { "name": "carrier_detachablechair_empty", "col": 0, "row": 1, "x": 7, "y": 26, "w": 23, "h": 16, "pivotX": 11, "pivotY": 0 },
+    { "name": "carrier_detachablechair_full", "col": 1, "row": 1, "x": 44, "y": 26, "w": 23, "h": 16, "pivotX": 11, "pivotY": 0 },
+    { "name": "carrier_detachablebubble_empty", "col": 0, "row": 2, "x": 2, "y": 50, "w": 33, "h": 16, "pivotX": 16, "pivotY": 0 },
+    { "name": "carrier_detachablebubble_full", "col": 1, "row": 2, "x": 39, "y": 50, "w": 33, "h": 16, "pivotX": 16, "pivotY": 0 },
+    { "name": "carrier_gondola_empty", "col": 0, "row": 3, "x": 12, "y": 74, "w": 13, "h": 20, "pivotX": 6, "pivotY": 0 },
+    { "name": "carrier_gondola_full", "col": 1, "row": 3, "x": 49, "y": 74, "w": 13, "h": 20, "pivotX": 6, "pivotY": 0 }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "sheet": "buildings",
+  "note": "One building per row (Waffle Cabin). Pivot: the centre of its tile on the ground; the tile is 64x32. Each sprite's rectangle (x, y, w, h, from the top-left of the PNG) and pivot (inside the rectangle) are listed below. Draw inside the sprite's cell; drawing past its rectangle grows it. To shrink a sprite or move its pivot, edit the numbers here.",
+  "cellWidth": 72,
+  "cellHeight": 74,
+  "columns": 1,
+  "rows": 1,
+  "sprites": [
+    { "name": "building_wafflecabin", "col": 0, "row": 0, "x": 2, "y": 2, "w": 68, "h": 70, "pivotX": 34, "pivotY": 52 }
+  ]
+}

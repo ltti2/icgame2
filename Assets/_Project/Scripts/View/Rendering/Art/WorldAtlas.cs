@@ -15,66 +15,10 @@ namespace IceCoast.View.Rendering
         public bool IsValid => Width > 0;
     }
 
-    /// <summary>Ground surface textures, multiplied over the tile's colour.</summary>
-    public enum SurfaceDetail
-    {
-        None = -1,
-        Powder,
-        Packed,
-        /// <summary>Corduroy lines along grid x.</summary>
-        GroomedX,
-        /// <summary>Corduroy lines along grid y.</summary>
-        GroomedY,
-        /// <summary>Corduroy along +x+y, straight down the screen.</summary>
-        GroomedDown,
-        /// <summary>Corduroy along +x-y, straight across the screen.</summary>
-        GroomedAcross,
-        Slush,
-        Ice,
-        Crud,
-        SnowyRock,
-        Grass,
-        Dirt,
-        Rock,
-        Scree,
-        Water,
-        /// <summary>Trampled snow with boot prints: walking areas.</summary>
-        Walkway,
-        /// <summary>Asphalt road with a dashed centre line along grid x.</summary>
-        RoadX,
-        /// <summary>Asphalt road with a dashed centre line along grid y.</summary>
-        RoadY,
-        /// <summary>Parking stalls: asphalt with painted dividers every half tile along grid x.</summary>
-        ParkingStalls,
-        /// <summary>The parking lot's driving aisle: plain asphalt.</summary>
-        ParkingAisle,
-        Count,
-    }
-
-    public enum TreeKind { Spruce, Fir, Hardwood, Count }
-
-    public enum SkierPose
-    {
-        /// <summary>Skiing across the hill, facing screen right (mirror for left).</summary>
-        SkiSide,
-        /// <summary>Skiing straight at the camera.</summary>
-        SkiFront,
-        /// <summary>Back to the camera: queueing, or towed up a surface lift.</summary>
-        Back,
-        /// <summary>Walking with skis on the shoulder, two frames, facing right.</summary>
-        Walk1,
-        Walk2,
-        /// <summary>Sitting on a chair, facing the camera.</summary>
-        Seated,
-        Fallen,
-        /// <summary>Second idle frame while standing in line (a shuffle).</summary>
-        BackIdle,
-        Count,
-    }
-
     /// <summary>
     /// The one texture behind every world object: ground surface textures plus pixel-art sprites for trees,
-    /// skiers and lift carriers, all drawn procedurally at startup (no image files to import).
+    /// skiers, lifts, cars, lights and buildings, packed at startup from the <see cref="ArtLibrary"/>: editable
+    /// PNG sprite sheets in StreamingAssets/Art where present, the code-drawn art otherwise.
     ///
     /// Shading convention (see IceCoastUnlit.shader): final colour = vertex colour x texel x 2, so a texel of
     /// 0.5 leaves the vertex colour unchanged. Ground textures are subtle multipliers around 0.5 that sit on
@@ -89,9 +33,9 @@ namespace IceCoast.View.Rendering
     public static class WorldAtlas
     {
         public const int Size = 1024;
-        public const int TerrainCellSize = 128;
-        public const int TilesPerCell = 4;
-        public const int TexelsPerTile = TerrainCellSize / TilesPerCell;
+        public const int TerrainCellSize = WorldAtlasConstants.TerrainCellSize;
+        public const int TilesPerCell = WorldAtlasConstants.TilesPerCell;
+        public const int TexelsPerTile = WorldAtlasConstants.TexelsPerTile;
         private const int TerrainRows = 3;
         private const int TerrainStripY = Size - TerrainRows * TerrainCellSize;
         private const int NeutralBlock = 8;
@@ -99,8 +43,8 @@ namespace IceCoast.View.Rendering
         /// <summary>World units per sprite texel: sprites are pixel-exact at zoom 1.</summary>
         public const float UnitsPerTexel = 1f / 32f;
 
-        public const int SkierLooks = 4;
-        public const int TreeVariants = 2;
+        public const int SkierLooks = WorldAtlasConstants.SkierLooks;
+        public const int TreeVariants = WorldAtlasConstants.TreeVariants;
 
         public static Texture2D Texture { get; private set; }
         public static Vector2 NeutralUv { get; private set; } = new Vector2(2f / Size, 2f / Size);
@@ -115,6 +59,7 @@ namespace IceCoast.View.Rendering
         private static WorldSprite _sheaves, _column;
         private static WorldSprite[,] _cars; // colour, nose toward camera
         private static WorldSprite[] _poles, _lampHeads; // light size
+        private static WorldSprite[] _buildings; // building type
 
         public static WorldSprite Tree(TreeKind kind, int variant, bool snowy) => _trees[(int)kind, variant % TreeVariants, snowy ? 1 : 0];
         public static WorldSprite TreeCluster(TreeKind kind, int variant, bool snowy) => _clusters[(int)kind, variant % TreeVariants, snowy ? 1 : 0];
@@ -132,6 +77,7 @@ namespace IceCoast.View.Rendering
         public static WorldSprite LightPole(LightSize size) => _poles[(int)size];
         public static WorldSprite LampHead(LightSize size) => _lampHeads[(int)size];
         public static WorldSprite RopeHandle => _ropeHandle;
+        public static WorldSprite Building(BuildingType type) => _buildings[(int)type];
 
         /// <summary>
         /// UVs of a tile's four corners (grid order: (x,y), (x+1,y), (x,y+1), (x+1,y+1)) for a ground texture.
@@ -166,12 +112,74 @@ namespace IceCoast.View.Rendering
 
         private static Color[] _pixels;
         private static int _shelfX, _shelfY, _shelfH;
+        /// <summary>Every sprite placed by the last build, in order: compared on reload to see if the layout moved.</summary>
+        private static List<WorldSprite> _placed = new List<WorldSprite>();
 
-        /// <summary>Draws the whole atlas. Called once by RenderMaterials.</summary>
+        /// <summary>
+        /// Raised after a reload that moved sprites around in the atlas (an edited sprite changed size), so renderers
+        /// with cached meshes rebuild them. Renderers that rebuild every frame need not listen.
+        /// </summary>
+        public static event System.Action LayoutChanged;
+
+        /// <summary>Draws the whole atlas from the art library (PNGs, or the code-drawn defaults). Called once by RenderMaterials.</summary>
         public static Texture2D Build()
         {
             if (Texture != null) return Texture;
+            var art = ArtLibrary.Current;
+            LogWarnings(art);
+            Paint(art);
+
+            var tex = new Texture2D(Size, Size, TextureFormat.RGBAHalf, true, true)
+            {
+                name = "IceCoast World Atlas",
+                filterMode = FilterMode.Point,
+                wrapMode = TextureWrapMode.Clamp,
+                anisoLevel = 0,
+                hideFlags = HideFlags.HideAndDontSave,
+            };
+            WriteMips(tex, _pixels);
+            tex.Apply(false, false); // stays readable so edited art can be reloaded into it
+            _pixels = null;
+            Texture = tex;
+            return tex;
+        }
+
+        /// <summary>
+        /// Redraws the atlas from <paramref name="art"/> into the existing texture (edited PNGs, while playing).
+        /// Returns true if sprites moved, in which case <see cref="LayoutChanged"/> has been raised.
+        /// </summary>
+        public static bool Reload(ArtLibrary art)
+        {
+            if (Texture == null) return false;
+            LogWarnings(art);
+            var before = _placed;
+            Paint(art);
+            WriteMips(Texture, _pixels);
+            Texture.Apply(false, false);
+            _pixels = null;
+
+            bool moved = before.Count != _placed.Count;
+            for (int i = 0; !moved && i < before.Count; i++)
+            {
+                var a = before[i];
+                var b = _placed[i];
+                moved = a.Uv0 != b.Uv0 || a.Uv1 != b.Uv1 || a.PivotX != b.PivotX || a.PivotY != b.PivotY;
+            }
+            if (moved) LayoutChanged?.Invoke();
+            return moved;
+        }
+
+        private static void LogWarnings(ArtLibrary art)
+        {
+            if (art.Warnings.Count == 0) return;
+            Debug.LogWarning("Ice Coast art:\n" + string.Join("\n", art.Warnings));
+        }
+
+        /// <summary>Lays out and draws every ground texture and sprite into <see cref="_pixels"/>, and fills the sprite tables.</summary>
+        private static void Paint(ArtLibrary art)
+        {
             _pixels = new Color[Size * Size]; // transparent black
+            _placed = new List<WorldSprite>();
 
             // Neutral block at the origin (UV 0,0 = untextured).
             var neutral = new Color(0.5f, 0.5f, 0.5f, 1f);
@@ -180,16 +188,16 @@ namespace IceCoast.View.Rendering
                     _pixels[y * Size + x] = neutral;
             NeutralUv = new Vector2((NeutralBlock * 0.5f) / Size, (NeutralBlock * 0.5f) / Size);
 
-            // Ground textures.
+            // Ground textures: stored as atlas values (128 grey = no change), PNG rows from the top = texel y.
             for (int i = 0; i < (int)SurfaceDetail.Count; i++)
             {
                 int cx = (i % 8) * TerrainCellSize, cy = TerrainStripY + (i / 8) * TerrainCellSize;
-                var m = TerrainDetailArt.Draw((SurfaceDetail)i, TerrainCellSize);
+                var m = art.Ground((SurfaceDetail)i);
                 for (int y = 0; y < TerrainCellSize; y++)
                     for (int x = 0; x < TerrainCellSize; x++)
                     {
                         var c = m[y * TerrainCellSize + x];
-                        _pixels[(cy + y) * Size + cx + x] = new Color(c.r * 0.5f, c.g * 0.5f, c.b * 0.5f, 1f);
+                        _pixels[(cy + y) * Size + cx + x] = new Color(c.r / 255f, c.g / 255f, c.b / 255f, 1f);
                     }
             }
 
@@ -202,29 +210,26 @@ namespace IceCoast.View.Rendering
             for (int k = 0; k < (int)TreeKind.Count; k++)
                 for (int v = 0; v < TreeVariants; v++)
                     for (int snow = 0; snow < 2; snow++)
-                        _trees[k, v, snow] = AddTreeCell(SpriteArt.Tree((TreeKind)k, v, snow == 1));
+                        _trees[k, v, snow] = AddTreeCell(art.Sprite(ArtSheets.TreeName((TreeKind)k, v, snow == 1)));
             _clusters = new WorldSprite[(int)TreeKind.Count, TreeVariants, 2];
             for (int k = 0; k < (int)TreeKind.Count; k++)
                 for (int v = 0; v < TreeVariants; v++)
                     for (int snow = 0; snow < 2; snow++)
-                        _clusters[k, v, snow] = AddTreeCell(SpriteArt.Cluster((TreeKind)k, v, snow == 1));
+                        _clusters[k, v, snow] = AddTreeCell(art.Sprite(ArtSheets.ClusterName((TreeKind)k, v, snow == 1)));
 
             _skiers = new WorldSprite[6, SkierLooks, (int)SkierPose.Count];
             for (int skill = 0; skill < 6; skill++)
                 for (int look = 0; look < SkierLooks; look++)
                     for (int pose = 0; pose < (int)SkierPose.Count; pose++)
-                        _skiers[skill, look, pose] = Add(SpriteArt.Skier(skill, look, (SkierPose)pose));
+                        _skiers[skill, look, pose] = Add(art.Sprite(ArtSheets.SkierName(skill, look, (SkierPose)pose)));
 
             int liftTypes = System.Enum.GetValues(typeof(LiftType)).Length;
             _carriers = new WorldSprite[liftTypes, 2];
             for (int t = 0; t < liftTypes; t++)
                 for (int o = 0; o < 2; o++)
-                {
-                    var canvas = SpriteArt.Carrier((LiftType)t, o == 1);
-                    _carriers[t, o] = canvas != null ? Add(canvas) : default;
-                }
-            _tBar = Add(SpriteArt.TBarCross());
-            _ropeHandle = Add(SpriteArt.RopeHandle());
+                    _carriers[t, o] = Add(art.Sprite(ArtSheets.CarrierName((LiftType)t, o == 1)));
+            _tBar = Add(art.Sprite(ArtSheets.TBarName));
+            _ropeHandle = Add(art.Sprite(ArtSheets.RopeHandleName));
 
             // Lift structures.
             _towers = new WorldSprite[liftTypes];
@@ -234,45 +239,32 @@ namespace IceCoast.View.Rendering
             for (int t = 0; t < liftTypes; t++)
             {
                 var type = (LiftType)t;
-                _towers[t] = Add(LiftArt.Tower(type));
-                _bullwheels[t] = Add(LiftArt.Bullwheel(type));
-                if (LiftArt.HasTerminal(type)) _terminals[t] = Add(LiftArt.Terminal(type));
-                for (int b = 0; b < 2; b++)
-                {
-                    var hut = LiftArt.Hut(type, b == 1);
-                    if (hut != null) _huts[t, b] = Add(hut);
-                }
+                _towers[t] = Add(art.Sprite(ArtSheets.TowerName(type)));
+                _bullwheels[t] = Add(art.Sprite(ArtSheets.BullwheelName(type)));
+                if (LiftArt.HasTerminal(type)) _terminals[t] = Add(art.Sprite(ArtSheets.TerminalName(type)));
+                for (int b = 0; b < 2; b++) _huts[t, b] = Add(art.Sprite(ArtSheets.HutName(type, b == 1)));
             }
-            _sheaves = Add(LiftArt.Sheaves());
-            _column = Add(LiftArt.Column());
+            _sheaves = Add(art.Sprite(ArtSheets.SheavesName));
+            _column = Add(art.Sprite(ArtSheets.ColumnName));
 
             // Props: cars and trail lights.
             _cars = new WorldSprite[PropArt.CarColorCount, 2];
             for (int col = 0; col < PropArt.CarColorCount; col++)
                 for (int nose = 0; nose < 2; nose++)
-                    _cars[col, nose] = Add(PropArt.Car(col, nose == 1));
+                    _cars[col, nose] = Add(art.Sprite(ArtSheets.CarName(col, nose == 1)));
             var lightDefs = SimConfig.DefaultLights();
             _poles = new WorldSprite[lightDefs.Length];
             _lampHeads = new WorldSprite[lightDefs.Length];
             foreach (var def in lightDefs)
             {
-                _poles[(int)def.Size] = Add(PropArt.Pole(def));
-                _lampHeads[(int)def.Size] = Add(PropArt.LampHeads(def));
+                _poles[(int)def.Size] = Add(art.Sprite(ArtSheets.PoleName(def.Size)));
+                _lampHeads[(int)def.Size] = Add(art.Sprite(ArtSheets.LampName(def.Size)));
             }
 
-            var tex = new Texture2D(Size, Size, TextureFormat.RGBAHalf, true, true)
-            {
-                name = "IceCoast World Atlas",
-                filterMode = FilterMode.Point,
-                wrapMode = TextureWrapMode.Clamp,
-                anisoLevel = 0,
-                hideFlags = HideFlags.HideAndDontSave,
-            };
-            WriteMips(tex, _pixels);
-            tex.Apply(false, true);
-            _pixels = null;
-            Texture = tex;
-            return tex;
+            // Buildings.
+            int buildingTypes = System.Enum.GetValues(typeof(BuildingType)).Length;
+            _buildings = new WorldSprite[buildingTypes];
+            for (int b = 0; b < buildingTypes; b++) _buildings[b] = Add(art.Sprite(ArtSheets.BuildingName((BuildingType)b)));
         }
 
         /// <summary>
@@ -349,11 +341,12 @@ namespace IceCoast.View.Rendering
 
         private static WorldSprite Add(PixelCanvas canvas)
         {
+            if (canvas == null) return default; // nothing drawn for this slot (e.g. a carpet's carrier)
             var at = Reserve(canvas.Width, canvas.Height);
             if (at.x < 0) return default;
             Blit(canvas, at.x, at.y, 0, 0);
             const float s = 1f / Size;
-            return new WorldSprite
+            var sprite = new WorldSprite
             {
                 Uv0 = new Vector2(at.x * s, at.y * s),
                 Uv1 = new Vector2((at.x + canvas.Width) * s, (at.y + canvas.Height) * s),
@@ -362,6 +355,8 @@ namespace IceCoast.View.Rendering
                 PivotX = canvas.PivotX,
                 PivotY = canvas.Height - canvas.PivotY, // canvas pivot is from the top
             };
+            _placed.Add(sprite);
+            return sprite;
         }
 
         /// <summary>
@@ -371,12 +366,13 @@ namespace IceCoast.View.Rendering
         /// </summary>
         private static WorldSprite AddTreeCell(PixelCanvas canvas)
         {
+            if (canvas == null) return default;
             int w = canvas.Width * 2, h = canvas.Height * 2;
             var at = Reserve(w, h);
             if (at.x < 0) return default;
             Blit(canvas, at.x, at.y, canvas.Width / 2, 0);
             const float s = 1f / Size;
-            return new WorldSprite
+            var sprite = new WorldSprite
             {
                 Uv0 = new Vector2(at.x * s, at.y * s),
                 Uv1 = new Vector2((at.x + w) * s, (at.y + h) * s),
@@ -385,6 +381,8 @@ namespace IceCoast.View.Rendering
                 PivotX = canvas.Width / 2 + canvas.PivotX,
                 PivotY = canvas.Height - canvas.PivotY,
             };
+            _placed.Add(sprite);
+            return sprite;
         }
     }
 }

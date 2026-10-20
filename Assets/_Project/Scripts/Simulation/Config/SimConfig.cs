@@ -23,6 +23,8 @@ namespace IceCoast.Simulation.Config
         public ParkingSettings Parking = new ParkingSettings();
         public WalkingSettings Walking = new WalkingSettings();
         public LiftDefinition[] Lifts = DefaultLifts();
+        public BuildingDefinition[] Buildings = DefaultBuildings();
+        public FoodSettings Food = new FoodSettings();
 
         /// <summary>Sandbox mode: infinite money, everything else identical.</summary>
         public bool SandboxMode;
@@ -41,6 +43,17 @@ namespace IceCoast.Simulation.Config
             for (int i = 0; i < lights.Length; i++)
                 if (lights[i].Size == size) return lights[i];
             throw new ArgumentException($"No LightDefinition configured for {size}");
+        }
+
+        public BuildingDefinition GetBuilding(BuildingType type)
+        {
+            if (Buildings != null)
+                for (int i = 0; i < Buildings.Length; i++)
+                    if (Buildings[i].Type == type) return Buildings[i];
+            // Configs saved before buildings existed: fall back to the built-in numbers.
+            foreach (var def in DefaultBuildings())
+                if (def.Type == type) return def;
+            throw new ArgumentException($"No BuildingDefinition configured for {type}");
         }
 
         public LiftDefinition GetLift(LiftType type)
@@ -200,6 +213,27 @@ namespace IceCoast.Simulation.Config
             public int NeedsUpdateIntervalTicks = 10;
         }
 
+        /// <summary>Hunger, and how guests decide to buy food (see Buildings/BuildingSystem).</summary>
+        [Serializable]
+        public class FoodSettings
+        {
+            /// <summary>Hunger (0..100) goes up by one every this many game minutes: 30 an hour at 2.</summary>
+            public int HungerMinutesPerPoint = 2;
+            /// <summary>Guests arrive with hunger between 0 and this (breakfast was a while ago for some).</summary>
+            public int StartingHungerMax = 40;
+            /// <summary>Above this hunger guests start looking for food whenever they choose what to do next.</summary>
+            public int HungryThreshold = 55;
+            /// <summary>
+            /// How far guests will walk to food from where they are (tiles). Anywhere on the same walking area also
+            /// counts, and from anywhere in the base area, so does anywhere in the base village.
+            /// </summary>
+            public float FoodWalkRadius = 20f;
+            /// <summary>Guests skip a food line that would take longer than this (minutes).</summary>
+            public float MaxWaitMinutes = 12f;
+            /// <summary>Food buildings open this many minutes before the lifts (breakfast for early birds).</summary>
+            public int OpensBeforeLiftsMinutes = 60;
+        }
+
         [Serializable]
         public class RunSettings
         {
@@ -274,8 +308,6 @@ namespace IceCoast.Simulation.Config
             public float[] PartySizeWeights = { 25f, 40f, 15f, 20f };
             /// <summary>Cars drive in and out at this speed (time-compressed like skiers).</summary>
             public float CarSpeedTilesPerMinute = 24f;
-            /// <summary>Tiles of access road drawn beyond the map edge, in the scenery.</summary>
-            public int RoadSceneryLength = 48;
             /// <summary>Reputation lost per guest turned away by a full lot (capped per day).</summary>
             public float TurnAwayReputationPenalty = 0.02f;
             public float TurnAwayReputationMaxPerDay = 3f;
@@ -296,6 +328,18 @@ namespace IceCoast.Simulation.Config
             public float BuildingMaxSlopePercent = 12f;
         }
 
+        public static BuildingDefinition[] DefaultBuildings() => new[]
+        {
+            new BuildingDefinition
+            {
+                Type = BuildingType.WaffleCabin, DisplayName = "Waffle Cabin", FootprintWidth = 1, FootprintHeight = 1,
+                BuildCost = 18_000, OperatingCostPerHour = 30, IngredientCostPerSale = 2,
+                DefaultPrice = 8, FairPrice = 8, MaxPrice = 20,
+                ServiceMinutes = 0.75f, EatMinutes = 6f, HappinessBoost = 8f, EnergyRestore = 10, MaxQueue = 14,
+                RequiredReputation = 0f,
+            },
+        };
+
         public static LightDefinition[] DefaultLights() => new[]
         {
             new LightDefinition { Size = LightSize.Small, DisplayName = "Small light", Cost = 1_500, RadiusTiles = 5f, PoleHeightMeters = 6f,
@@ -307,37 +351,38 @@ namespace IceCoast.Simulation.Config
         };
 
         /// <remarks>
-        /// Speeds and capacities are set so carriers have clear space between them (spacing in tiles =
-        /// speed x seats x 60 / capacity): about 1 tile for handles and T-bars, 1.5 for chairs, 2 for bubbles and
-        /// 3 for gondola cabins. Slower lines at higher capacity pack carriers into a solid column.
+        /// Line speeds are slow enough to watch at 1x (a chair takes about 30 real seconds to climb 100 tiles),
+        /// while capacities stay realistic. Carrier spacing in tiles = speed x seats x 60 / capacity: about 0.6
+        /// for T-bars and chairs, 0.8 for bubbles and 1.2 for gondola cabins. Going much slower at the same
+        /// capacity packs carriers into a solid column; lower the capacity too if you slow a line further.
         /// </remarks>
         public static LiftDefinition[] DefaultLifts() => new[]
         {
-            new LiftDefinition { Type = LiftType.RopeTow, DisplayName = "Rope Tow", CapacityPerHour = 200, SeatsPerCarrier = 1, LoadingEfficiency = 1f, SpeedTilesPerMinute = 3f,
+            new LiftDefinition { Type = LiftType.RopeTow, DisplayName = "Rope Tow", CapacityPerHour = 200, SeatsPerCarrier = 1, LoadingEfficiency = 1f, SpeedTilesPerMinute = 1.2f,
                 BaseCost = 12_000, CostPerTile = 120, OperatingCostPerHour = 35, MinLengthTiles = 6, MaxLengthTiles = 45, MaxGradePercent = 30f,
                 TowerSpacingTiles = 10, CableHeightMeters = 1f, PowerDrawKw = 15, StaffRequired = 1, WindLimitKmh = 90, Comfort = 0.2f,
                 RequiredReputation = 0 },
-            new LiftDefinition { Type = LiftType.MagicCarpet, DisplayName = "Magic Carpet", CapacityPerHour = 300, SeatsPerCarrier = 1, LoadingEfficiency = 1f, SpeedTilesPerMinute = 1.5f,
+            new LiftDefinition { Type = LiftType.MagicCarpet, DisplayName = "Magic Carpet", CapacityPerHour = 300, SeatsPerCarrier = 1, LoadingEfficiency = 1f, SpeedTilesPerMinute = 0.6f,
                 BaseCost = 20_000, CostPerTile = 400, OperatingCostPerHour = 30, MinLengthTiles = 3, MaxLengthTiles = 15, MaxGradePercent = 15f,
                 TowerSpacingTiles = 0, CableHeightMeters = 0f, PowerDrawKw = 10, StaffRequired = 1, WindLimitKmh = 120, Comfort = 0.5f,
                 RequiredReputation = 10 },
-            new LiftDefinition { Type = LiftType.TBar, DisplayName = "T-Bar", CapacityPerHour = 600, SeatsPerCarrier = 2, LoadingEfficiency = 0.8f, SpeedTilesPerMinute = 5f,
+            new LiftDefinition { Type = LiftType.TBar, DisplayName = "T-Bar", CapacityPerHour = 450, SeatsPerCarrier = 2, LoadingEfficiency = 0.8f, SpeedTilesPerMinute = 2.2f,
                 BaseCost = 110_000, CostPerTile = 600, OperatingCostPerHour = 70, MinLengthTiles = 15, MaxLengthTiles = 140, MaxGradePercent = 45f,
                 TowerSpacingTiles = 12, CableHeightMeters = 4f, PowerDrawKw = 60, StaffRequired = 2, WindLimitKmh = 80, Comfort = 0.3f,
                 RequiredReputation = 35 },
-            new LiftDefinition { Type = LiftType.FixedGripChair, DisplayName = "Fixed-Grip Chair", CapacityPerHour = 1000, SeatsPerCarrier = 3, LoadingEfficiency = 0.8f, SpeedTilesPerMinute = 8f,
+            new LiftDefinition { Type = LiftType.FixedGripChair, DisplayName = "Fixed-Grip Chair", CapacityPerHour = 1000, SeatsPerCarrier = 3, LoadingEfficiency = 0.8f, SpeedTilesPerMinute = 3.2f,
                 BaseCost = 550_000, CostPerTile = 2_500, OperatingCostPerHour = 160, MinLengthTiles = 30, MaxLengthTiles = 220, MaxGradePercent = 80f,
                 TowerSpacingTiles = 8, CableHeightMeters = 9f, PowerDrawKw = 250, StaffRequired = 3, WindLimitKmh = 65, Comfort = 0.55f,
                 RequiredReputation = 50 },
-            new LiftDefinition { Type = LiftType.DetachableChair, DisplayName = "Detachable Chair", CapacityPerHour = 2000, SeatsPerCarrier = 4, LoadingEfficiency = 0.85f, SpeedTilesPerMinute = 12f,
+            new LiftDefinition { Type = LiftType.DetachableChair, DisplayName = "Detachable Chair", CapacityPerHour = 2000, SeatsPerCarrier = 4, LoadingEfficiency = 0.85f, SpeedTilesPerMinute = 4.8f,
                 BaseCost = 2_400_000, CostPerTile = 6_000, OperatingCostPerHour = 380, MinLengthTiles = 40, MaxLengthTiles = 300, MaxGradePercent = 80f,
                 TowerSpacingTiles = 8, CableHeightMeters = 10f, PowerDrawKw = 600, StaffRequired = 4, WindLimitKmh = 60, Comfort = 0.7f,
                 RequiredReputation = 70 },
-            new LiftDefinition { Type = LiftType.DetachableBubble, DisplayName = "Bubble Chair", CapacityPerHour = 2200, SeatsPerCarrier = 6, LoadingEfficiency = 0.85f, SpeedTilesPerMinute = 12f,
+            new LiftDefinition { Type = LiftType.DetachableBubble, DisplayName = "Bubble Chair", CapacityPerHour = 2200, SeatsPerCarrier = 6, LoadingEfficiency = 0.85f, SpeedTilesPerMinute = 4.8f,
                 BaseCost = 3_400_000, CostPerTile = 8_000, OperatingCostPerHour = 420, MinLengthTiles = 40, MaxLengthTiles = 300, MaxGradePercent = 80f,
                 TowerSpacingTiles = 8, CableHeightMeters = 10f, PowerDrawKw = 650, StaffRequired = 4, WindLimitKmh = 70, Comfort = 0.85f,
                 WeatherProtected = true, RequiredReputation = 78 },
-            new LiftDefinition { Type = LiftType.Gondola, DisplayName = "Gondola", CapacityPerHour = 1600, SeatsPerCarrier = 8, LoadingEfficiency = 0.75f, SpeedTilesPerMinute = 10f,
+            new LiftDefinition { Type = LiftType.Gondola, DisplayName = "Gondola", CapacityPerHour = 1600, SeatsPerCarrier = 8, LoadingEfficiency = 0.75f, SpeedTilesPerMinute = 4f,
                 BaseCost = 6_000_000, CostPerTile = 12_000, OperatingCostPerHour = 600, MinLengthTiles = 60, MaxLengthTiles = 500, MaxGradePercent = 100f,
                 TowerSpacingTiles = 14, CableHeightMeters = 18f, PowerDrawKw = 900, StaffRequired = 5, WindLimitKmh = 75, Comfort = 0.95f,
                 WeatherProtected = true, CanTurn = true, RequiredReputation = 85 },

@@ -9,7 +9,7 @@ namespace IceCoast.View.Tools
     {
         public override string Name => "Inspect";
         public override string Icon => "inspect";
-        public override string Help => "Click a lift, run or patch of snow to open its window.";
+        public override string Help => "Click a lift, building, run or patch of snow to open its window.";
 
         public override void Tick(ToolContext ctx)
         {
@@ -23,17 +23,18 @@ namespace IceCoast.View.Tools
             if (!GameInput.LeftDown || ctx.PointerOverUi) return;
 
             var t = ctx.HoverTile;
-            int liftId = 0, runId = 0;
+            int liftId = 0, runId = 0, buildingId = 0;
             ushort occupant = map.GetOccupant(t.X, t.Y);
             var kind = Occupant.KindOf(occupant);
             if (kind == OccupantKind.LiftStation || kind == OccupantKind.LiftTower) liftId = Occupant.IdOf(occupant);
+            else if (kind == OccupantKind.Building) buildingId = Occupant.IdOf(occupant);
             else runId = map.GetRunId(t.X, t.Y);
-            view.Select(t, liftId, runId, GameInput.MousePosition);
+            view.Select(t, liftId, runId, GameInput.MousePosition, buildingId);
         }
 
         public override bool Cancel(ToolContext ctx)
         {
-            if (!ctx.View.SelectedTile.IsValid && ctx.View.SelectedLiftId == 0 && ctx.View.SelectedRunId == 0) return false;
+            if (!ctx.View.SelectedTile.IsValid && ctx.View.SelectedLiftId == 0 && ctx.View.SelectedRunId == 0 && ctx.View.SelectedBuildingId == 0) return false;
             ctx.View.ClearSelection();
             return true;
         }

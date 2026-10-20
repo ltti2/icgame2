@@ -1,0 +1,16 @@
+{
+  "sheet": "trail_lights",
+  "note": "Rows: small, medium, large. Columns: pole, lamp heads (drawn on top, and glowing at night). Pivot: the foot of the pole. Each sprite's rectangle (x, y, w, h, from the top-left of the PNG) and pivot (inside the rectangle) are listed below. Draw inside the sprite's cell; drawing past its rectangle grows it. To shrink a sprite or move its pivot, edit the numbers here.",
+  "cellWidth": 23,
+  "cellHeight": 82,
+  "columns": 2,
+  "rows": 3,
+  "sprites": [
+    { "name": "pole_small", "col": 0, "row": 0, "x": 5, "y": 50, "w": 13, "h": 30, "pivotX": 6, "pivotY": 29 },
+    { "name": "lamp_small", "col": 1, "row": 0, "x": 28, "y": 50, "w": 13, "h": 30, "pivotX": 6, "pivotY": 29 },
+    { "name": "pole_medium", "col": 0, "row": 1, "x": 5, "y": 112, "w": 13, "h": 50, "pivotX": 6, "pivotY": 49 },
+    { "name": "lamp_medium", "col": 1, "row": 1, "x": 28, "y": 112, "w": 13, "h": 50, "pivotX": 6, "pivotY": 49 },
+    { "name": "pole_large", "col": 0, "row": 2, "x": 2, "y": 166, "w": 19, "h": 78, "pivotX": 9, "pivotY": 77 },
+    { "name": "lamp_large", "col": 1, "row": 2, "x": 25, "y": 166, "w": 19, "h": 78, "pivotX": 9, "pivotY": 77 }
+  ]
+}

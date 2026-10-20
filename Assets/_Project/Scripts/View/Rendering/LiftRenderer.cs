@@ -70,8 +70,12 @@ namespace IceCoast.View.Rendering
             CreateChild("Structures", _staticMesh);
             CreateChild("Carriers", _dynamicMesh);
             _runner.SimulationChanged += sim => { _sim = sim; _builtVersion = -1; };
+            WorldAtlas.LayoutChanged += OnAtlasLayoutChanged;
             _sim = _runner.Sim;
         }
+
+        private void OnAtlasLayoutChanged() => _builtVersion = -1;
+        private void OnDestroy() => WorldAtlas.LayoutChanged -= OnAtlasLayoutChanged;
 
         private void CreateChild(string name, Mesh mesh)
         {

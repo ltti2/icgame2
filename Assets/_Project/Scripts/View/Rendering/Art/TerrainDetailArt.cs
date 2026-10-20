@@ -275,7 +275,7 @@ namespace IceCoast.View.Rendering
         /// <summary>A two-lane road one tile wide: white edge lines and a dashed yellow centre line.</summary>
         private static void Road(Color[] m, int n, int seed, bool alongX)
         {
-            const int tile = WorldAtlas.TexelsPerTile;
+            const int tile = WorldAtlasConstants.TexelsPerTile;
             for (int y = 0; y < n; y++)
                 for (int x = 0; x < n; x++)
                 {
@@ -290,7 +290,7 @@ namespace IceCoast.View.Rendering
         /// <summary>Parking lot asphalt. Stall tiles get white dividers every half tile (two cars per tile across).</summary>
         private static void Parking(Color[] m, int n, int seed, bool stalls)
         {
-            const int tile = WorldAtlas.TexelsPerTile;
+            const int tile = WorldAtlasConstants.TexelsPerTile;
             for (int y = 0; y < n; y++)
                 for (int x = 0; x < n; x++)
                 {

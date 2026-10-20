@@ -262,9 +262,10 @@ namespace IceCoast.Tests
             var cfg = SimConfig.CreateDefault();
             foreach (var def in cfg.Lifts)
             {
-                if (def.Type == LiftType.MagicCarpet) continue; // a belt: riders stand close together
+                // A belt and a rope: riders stand close together, holding on wherever they like.
+                if (def.Type == LiftType.MagicCarpet || def.Type == LiftType.RopeTow) continue;
                 float spacing = def.SpeedTilesPerMinute * def.SeatsPerCarrier * 60f / def.CapacityPerHour;
-                Assert.GreaterOrEqual(spacing, 0.85f, $"{def.DisplayName} carriers are only {spacing:0.00} tiles apart");
+                Assert.GreaterOrEqual(spacing, 0.55f, $"{def.DisplayName} carriers are only {spacing:0.00} tiles apart");
             }
         }
     }

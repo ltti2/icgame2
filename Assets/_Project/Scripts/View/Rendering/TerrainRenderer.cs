@@ -46,13 +46,21 @@ namespace IceCoast.View.Rendering
             _view = view;
             _camera = cam;
             _runner.SimulationChanged += Bind;
+            WorldAtlas.LayoutChanged += OnAtlasLayoutChanged;
             if (_runner.Sim != null) Bind(_runner.Sim);
         }
 
         private void OnDestroy()
         {
             if (_runner != null) _runner.SimulationChanged -= Bind;
+            WorldAtlas.LayoutChanged -= OnAtlasLayoutChanged;
             DestroyChunks();
+        }
+
+        /// <summary>Edited tree sprites changed size: rebuild every chunk with the new UVs.</summary>
+        private void OnAtlasLayoutChanged()
+        {
+            if (_sim != null) Bind(_sim);
         }
 
         private void Bind(GameSimulation sim)

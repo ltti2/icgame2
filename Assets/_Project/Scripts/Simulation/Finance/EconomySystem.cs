@@ -29,6 +29,7 @@ namespace IceCoast.Simulation.Finance
             {
                 Economy.AddExpense(LedgerCategory.LiftOperations, _sim.LiftSystem.HourlyOperatingCost());
                 Economy.AddExpense(LedgerCategory.Utilities, _sim.LightingSystem.HourlyOperatingCost());
+                Economy.AddExpense(LedgerCategory.FoodService, _sim.BuildingSystem.ChargeHourlyCosts());
             }
 
             if (clock.DayAdvanced)
@@ -58,6 +59,7 @@ namespace IceCoast.Simulation.Finance
 
             economy.Today = new DailyLedger { Day = _sim.World.Time.Day };
             _sim.LiftSystem.ResetDailyStats();
+            _sim.BuildingSystem.ResetDailyStats();
         }
 
         /// <summary>

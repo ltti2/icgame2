@@ -45,20 +45,20 @@ namespace IceCoast.View.Rendering
 
         // ---------- Palette ----------
 
-        private static readonly Color32 Outline = new Color32(34, 36, 42, 255);
+        internal static readonly Color32 Outline = new Color32(34, 36, 42, 255);
         private static readonly Color32 SteelLit = new Color32(176, 182, 192, 255);
         private static readonly Color32 SteelMid = new Color32(132, 138, 148, 255);
         private static readonly Color32 SteelDark = new Color32(78, 82, 92, 255);
         private static readonly Color32 Concrete = new Color32(170, 168, 160, 255);
         private static readonly Color32 ConcreteDark = new Color32(128, 126, 120, 255);
-        private static readonly Color32 WoodLit = new Color32(160, 116, 74, 255);
-        private static readonly Color32 WoodMid = new Color32(128, 90, 56, 255);
-        private static readonly Color32 WoodDark = new Color32(92, 64, 40, 255);
+        internal static readonly Color32 WoodLit = new Color32(160, 116, 74, 255);
+        internal static readonly Color32 WoodMid = new Color32(128, 90, 56, 255);
+        internal static readonly Color32 WoodDark = new Color32(92, 64, 40, 255);
         private static readonly Color32 Glass = new Color32(150, 196, 226, 255);
         private static readonly Color32 GlassDark = new Color32(98, 138, 172, 255);
         private static readonly Color32 GlassGlint = new Color32(226, 240, 250, 255);
 
-        private static Color32 Shade(Color32 c, float f)
+        internal static Color32 Shade(Color32 c, float f)
             => new Color32((byte)Mathf.Clamp(c.r * f, 0, 255), (byte)Mathf.Clamp(c.g * f, 0, 255), (byte)Mathf.Clamp(c.b * f, 0, 255), c.a);
 
         private static Color32 PaintFor(LiftType t)
@@ -226,7 +226,7 @@ namespace IceCoast.View.Rendering
         /// Draws isometric shapes onto a canvas. Grid coordinates are fractions of the station's tile (0..1 on
         /// each axis), heights are pixels above the tile centre's ground. The tile's top corner sits at (ox, oy).
         /// </summary>
-        private sealed class Iso
+        internal sealed class Iso
         {
             public readonly PixelCanvas C;
             private readonly float _ox, _oy;
@@ -295,7 +295,7 @@ namespace IceCoast.View.Rendering
         private const int BuildingTopRoom = 46;
 
         /// <summary>Canvas for a building on one tile, pivot at the tile centre on the ground.</summary>
-        private static Iso BuildingCanvas(int topRoom, out PixelCanvas c)
+        internal static Iso BuildingCanvas(int topRoom, out PixelCanvas c)
         {
             c = new PixelCanvas(68, 34 + topRoom);
             var iso = new Iso(c, 34f, topRoom);
@@ -304,10 +304,10 @@ namespace IceCoast.View.Rendering
             return iso;
         }
 
-        private static System.Func<int, int, Color32> Planks(Color32 baseCol)
+        internal static System.Func<int, int, Color32> Planks(Color32 baseCol)
             => (x, y) => y % 3 == 0 ? Shade(baseCol, 0.82f) : baseCol;
 
-        private static System.Func<int, int, Color32> Flat(Color32 col) => (x, y) => col;
+        internal static System.Func<int, int, Color32> Flat(Color32 col) => (x, y) => col;
 
         /// <summary>
         /// The ground-level building at a station: a lift shack, ticket booth or station hall depending on the
@@ -449,19 +449,19 @@ namespace IceCoast.View.Rendering
         private static System.Func<int, int, Color32> CurtainWall(Color32 glass, int phase)
             => (x, y) => ((x + phase) % 6 == 0 || y % 9 == 0) ? new Color32(70, 80, 92, 255) : (((x + y) % 11 == 0) ? GlassGlint : glass);
 
-        private static void WindowRight(Iso iso, float x1, float ya, float yb, float h0, float h1)
+        internal static void WindowRight(Iso iso, float x1, float ya, float yb, float h0, float h1)
         {
             iso.RightWall(x1, ya, yb, h0, h1, (x, y) => Outline);
             iso.RightWall(x1, ya + 0.02f, yb - 0.02f, h0 + 1, h1 - 1, (x, y) => (x + y) % 5 == 0 ? GlassGlint : Glass);
         }
 
-        private static void WindowLeft(Iso iso, float y1, float xa, float xb, float h0, float h1)
+        internal static void WindowLeft(Iso iso, float y1, float xa, float xb, float h0, float h1)
         {
             iso.LeftWall(y1, xa, xb, h0, h1, (x, y) => Outline);
             iso.LeftWall(y1, xa + 0.02f, xb - 0.02f, h0 + 1, h1 - 1, (x, y) => (x + y) % 5 == 0 ? Glass : GlassDark);
         }
 
-        private static void Door(Iso iso, float y1, float xa, float xb, float h, Color32 col)
+        internal static void Door(Iso iso, float y1, float xa, float xb, float h, Color32 col)
         {
             iso.LeftWall(y1, xa, xb, 0, h, (x, y) => col);
             iso.Edge(xa, y1, h, xb, y1, h, Outline);

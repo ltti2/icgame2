@@ -248,6 +248,7 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: 8b04e064ae283ef05913afea5648b468, type: 2}
   unlitShader: {fileID: 4800000, guid: 9e2a3cc7910a5b592908c2adaaeb75f2, type: 3}
   gameCamera: {fileID: 2116173804}
+  targetFrameRate: 30
   sandboxMode: 0
   overrideSeed: 0
   seed: 12345

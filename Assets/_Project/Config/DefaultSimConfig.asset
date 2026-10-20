@@ -110,7 +110,7 @@ MonoBehaviour:
       CapacityPerHour: 200
       SeatsPerCarrier: 1
       LoadingEfficiency: 1
-      SpeedTilesPerMinute: 3
+      SpeedTilesPerMinute: 1.2
       BaseCost: 12000
       CostPerTile: 120
       OperatingCostPerHour: 35
@@ -131,7 +131,7 @@ MonoBehaviour:
       CapacityPerHour: 300
       SeatsPerCarrier: 1
       LoadingEfficiency: 1
-      SpeedTilesPerMinute: 1.5
+      SpeedTilesPerMinute: 0.6
       BaseCost: 20000
       CostPerTile: 400
       OperatingCostPerHour: 30
@@ -149,10 +149,10 @@ MonoBehaviour:
       RequiredReputation: 10
     - Type: 2
       DisplayName: T-Bar
-      CapacityPerHour: 600
+      CapacityPerHour: 450
       SeatsPerCarrier: 2
       LoadingEfficiency: 0.8
-      SpeedTilesPerMinute: 5
+      SpeedTilesPerMinute: 2.2
       BaseCost: 110000
       CostPerTile: 600
       OperatingCostPerHour: 70
@@ -173,7 +173,7 @@ MonoBehaviour:
       CapacityPerHour: 1000
       SeatsPerCarrier: 3
       LoadingEfficiency: 0.8
-      SpeedTilesPerMinute: 8
+      SpeedTilesPerMinute: 3.2
       BaseCost: 550000
       CostPerTile: 2500
       OperatingCostPerHour: 160
@@ -194,7 +194,7 @@ MonoBehaviour:
       CapacityPerHour: 2000
       SeatsPerCarrier: 4
       LoadingEfficiency: 0.85
-      SpeedTilesPerMinute: 12
+      SpeedTilesPerMinute: 4.8
       BaseCost: 2400000
       CostPerTile: 6000
       OperatingCostPerHour: 380
@@ -215,7 +215,7 @@ MonoBehaviour:
       CapacityPerHour: 2200
       SeatsPerCarrier: 6
       LoadingEfficiency: 0.85
-      SpeedTilesPerMinute: 12
+      SpeedTilesPerMinute: 4.8
       BaseCost: 3400000
       CostPerTile: 8000
       OperatingCostPerHour: 420
@@ -236,7 +236,7 @@ MonoBehaviour:
       CapacityPerHour: 1600
       SeatsPerCarrier: 8
       LoadingEfficiency: 0.75
-      SpeedTilesPerMinute: 10
+      SpeedTilesPerMinute: 4
       BaseCost: 6000000
       CostPerTile: 12000
       OperatingCostPerHour: 600

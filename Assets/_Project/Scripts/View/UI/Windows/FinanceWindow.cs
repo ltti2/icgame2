@@ -74,6 +74,7 @@ namespace IceCoast.View.UI.Windows
             {
                 case LedgerCategory.LiftOperations: return "Lift operations";
                 case LedgerCategory.TreeClearing: return "Tree clearing";
+                case LedgerCategory.FoodService: return "Food service";
                 default: return c.ToString();
             }
         }

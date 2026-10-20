@@ -28,6 +28,10 @@ namespace IceCoast.Simulation.Guests
         Eating,
         Warming,
         Leaving,
+        /// <summary>Hungry: walking to the back of a food line (TargetId = building id).</summary>
+        WalkingToFood,
+        /// <summary>In line at a food window (TargetId = building id).</summary>
+        WaitingForFood,
     }
 
     [Flags]
@@ -41,6 +45,8 @@ namespace IceCoast.Simulation.Guests
         /// <summary>Got in over their head on the current run.</summary>
         Scared = 1 << 4,
         WantsToLeave = 1 << 5,
+        /// <summary>Was hungry but found the food too dear (counted once per visit in the building's stats).</summary>
+        PricedOutOfFood = 1 << 6,
     }
 
     /// <summary>

@@ -47,6 +47,15 @@ namespace IceCoast.View.UI
             View.SelectedLiftId = liftId;
         }
 
+        public void OpenBuilding(int buildingId, Vector2? near = null)
+        {
+            var w = Windows.Find(BuildingWindow.KeyFor(buildingId));
+            if (w != null) { Windows.BringToFront(w); View.SelectedBuildingId = buildingId; return; }
+            var bw = Windows.Open(new BuildingWindow(this, buildingId));
+            Place(bw, near);
+            View.SelectedBuildingId = buildingId;
+        }
+
         public void OpenRun(int runId, Vector2? near = null)
         {
             var w = Windows.Find(RunWindow.KeyFor(runId));

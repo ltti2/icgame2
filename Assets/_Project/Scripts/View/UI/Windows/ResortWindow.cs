@@ -54,6 +54,12 @@ namespace IceCoast.View.UI.Windows
             ui.Field("Arrived / peak", $"{today.GuestsArrived:N0} / {today.PeakGuests:N0}");
             ui.Field("Lift rides", today.LiftRides.ToString("N0"));
             ui.Field("Runs skied", today.RunsCompleted.ToString("N0"));
+            if (world.Buildings.Count > 0)
+            {
+                int sold = 0;
+                foreach (var b in world.Buildings) sold += b.SoldToday;
+                ui.Field("Waffles sold", sold.ToString("N0"));
+            }
             ui.Field("Injuries", today.Injuries.ToString(), today.Injuries > 0 ? GameUi.SeverityOnLight(Simulation.Events.EventSeverity.Danger) : ui.Scheme.Text);
             if (today.GuestsDeparted > 0) ui.Field("Happiness (leaving)", $"{today.AverageHappiness:0}%");
             ui.Field("Profit so far", _game.Money(today.Profit), today.Profit >= 0 ? ui.Scheme.Text : GameUi.SeverityOnLight(Simulation.Events.EventSeverity.Danger));

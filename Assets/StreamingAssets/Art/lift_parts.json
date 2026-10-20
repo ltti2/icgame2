@@ -1,0 +1,14 @@
+{
+  "sheet": "lift_parts",
+  "note": "T-bar crosspiece, rope-tow handle, sheave train and terminal column. The column is stretched to height in game. Each sprite's rectangle (x, y, w, h, from the top-left of the PNG) and pivot (inside the rectangle) are listed below. Draw inside the sprite's cell; drawing past its rectangle grows it. To shrink a sprite or move its pivot, edit the numbers here.",
+  "cellWidth": 15,
+  "cellHeight": 23,
+  "columns": 4,
+  "rows": 1,
+  "sprites": [
+    { "name": "tbar", "col": 0, "row": 0, "x": 2, "y": 17, "w": 11, "h": 4, "pivotX": 5, "pivotY": 0 },
+    { "name": "rope_handle", "col": 1, "row": 0, "x": 21, "y": 17, "w": 3, "h": 4, "pivotX": 1, "pivotY": 0 },
+    { "name": "sheaves", "col": 2, "row": 0, "x": 33, "y": 17, "w": 9, "h": 4, "pivotX": 4, "pivotY": 0 },
+    { "name": "column", "col": 3, "row": 0, "x": 51, "y": 2, "w": 3, "h": 16, "pivotX": 1, "pivotY": 15 }
+  ]
+}

@@ -44,6 +44,7 @@ namespace IceCoast.View.Runtime
         public bool ShowContours;
 
         public int SelectedLiftId;
+        public int SelectedBuildingId;
         public Int2 SelectedTile = Int2.Invalid;
 
         public Int2 HoverTile = Int2.Invalid;
@@ -58,6 +59,7 @@ namespace IceCoast.View.Runtime
         {
             SelectedLiftId = 0;
             SelectedRunId = 0;
+            SelectedBuildingId = 0;
             SelectedTile = Int2.Invalid;
         }
 
@@ -66,13 +68,14 @@ namespace IceCoast.View.Runtime
         /// <summary>Screen position (bottom-left origin) of the last inspect click, so windows open nearby.</summary>
         public UnityEngine.Vector2 ClickScreenPosition;
 
-        /// <summary>The player clicked something: a lift, a run (with the tile under it) or bare ground.</summary>
-        public void Select(Int2 tile, int liftId, int runId, UnityEngine.Vector2 screenPosition)
+        /// <summary>The player clicked something: a lift, a building, a run (with the tile under it) or bare ground.</summary>
+        public void Select(Int2 tile, int liftId, int runId, UnityEngine.Vector2 screenPosition, int buildingId = 0)
         {
             ClearSelection();
             SelectedTile = tile;
             SelectedLiftId = liftId;
             SelectedRunId = runId;
+            SelectedBuildingId = buildingId;
             ClickScreenPosition = screenPosition;
             ClickVersion++;
         }

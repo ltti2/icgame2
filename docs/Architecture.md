@@ -53,11 +53,12 @@ Systems hold **no saveable state**. Anything that must survive a save lives in `
 5. `LightingSystem`: is it dark, are the trail lights on, is there a night session
 6. `ArrivalSystem`: cars arrive (each needs a parking space)
 7. `ParkingSystem`: cars drive in and out; a parked car's party steps out
-8. `EconomySystem`: hourly costs (lifts, light power), end-of-day books, reputation, bankruptcy
+8. `EconomySystem`: hourly costs (lifts, light power, food buildings), end-of-day books, reputation, bankruptcy
 9. `LiftSystem`: status, loading, riders
 10. `GuestSystem`: state machine
-11. `SnowSystem`: chunk-staggered (roads and parking stay plowed)
-12. `RunSystem`: periodic snow stats
+11. `BuildingSystem`: food windows serve the front of their lines
+12. `SnowSystem`: chunk-staggered (roads and parking stay plowed)
+13. `RunSystem`: periodic snow stats
 
 Systems that only care about minutes, hours or days check `sim.Clock` instead of counting ticks themselves.
 
@@ -71,7 +72,7 @@ Systems that only care about minutes, hours or days check `sim.Clock` instead of
 
 ### Lift loading
 
-Lifts load discrete **carriers** (a rope-tow handle, a T-bar, a chair, a cabin). Each lift has a `LineClock` that advances one per tick while the haul rope turns (not on wind hold). Carrier *k* reaches the loading point when the clock passes *k* x `LiftSystem.CarrierInterval` (seats x ticks per hour / capacity), and up to `SeatsPerCarrier` guests from the front of the line sit down on it together, each in their own seat. The first seat always fills when someone is waiting; further seats fill with the type's `LoadingEfficiency`, so lines run longer than nameplate capacity (`Lift.EffectiveCapacityPerHour` drives wait estimates). The view draws carrier *k* and its riders from the same clock, so riders are always on their chair. Speeds and capacities are set so carriers have clear space between them (spacing = speed x seats x 60 / capacity: about 1 tile for handles and T-bars, 1.5 for chairs, 2 for bubbles, 3 for gondola cabins); `Carriers_HaveClearSpaceBetweenThem` guards this.
+Lifts load discrete **carriers** (a rope-tow handle, a T-bar, a chair, a cabin). Each lift has a `LineClock` that advances one per tick while the haul rope turns (not on wind hold). Carrier *k* reaches the loading point when the clock passes *k* x `LiftSystem.CarrierInterval` (seats x ticks per hour / capacity), and up to `SeatsPerCarrier` guests from the front of the line sit down on it together, each in their own seat. The first seat always fills when someone is waiting; further seats fill with the type's `LoadingEfficiency`, so lines run longer than nameplate capacity (`Lift.EffectiveCapacityPerHour` drives wait estimates). The view draws carrier *k* and its riders from the same clock, so riders are always on their chair. Line speeds are slow enough to watch at 1x (a chair climbs about 3 tiles per real second; a 100-tile chair ride takes about 30 seconds) while capacities stay realistic, so carriers ride fairly close together (spacing = speed x seats x 60 / capacity: about 0.6 tile for T-bars and chairs, 0.8 for bubbles, 1.2 for gondola cabins; rope-tow riders hold the rope wherever). `Carriers_HaveClearSpaceBetweenThem` guards this. Loading a save applies the current config's speed and capacity to existing lifts (`LiftSystem.ApplyDefinition`).
 
 ### Skiers go downhill
 
@@ -154,11 +155,17 @@ After dark, guests treat unlit trails as dark (`LightingSystem.IsRunDark`): rout
 
 `Chunk.Surface` holds a `SurfaceType` per tile: natural, walking area, road or parking. Trails never overlap walking areas, roads or parking. Walking areas are painted and erased with `PaintWalkingAreaCommand` (one brush stroke per command). `WalkingAreaSystem` flood-fills walking areas plus parking into zones (derived, rebuilt on change and after a load) and links lift stations within `LiftLinkRadius` to them. Guests standing on a zone can walk to every lift that opens onto it however far across it, a trail ending on a zone leads to those lifts (`Run.EndZoneId`), and a lift whose top opens onto a zone connects to them (`RouteValues.BuildTransfers`). A zone containing the base village or the lot counts as the base. On walking areas guests take their skis off and walk.
 
-`Buildings/BuildingRules.CanPlaceFootprint` is the placement rule for M4 buildings: every footprint tile must be an owned, unoccupied, fairly flat walking area tile. Walking area under a building can't be erased.
+`Buildings/BuildingRules.CanPlaceFootprint` is the placement rule for buildings: every footprint tile must be an owned, unoccupied, fairly flat walking area tile. Walking area under a building can't be erased.
+
+### Waffle Cabins (food)
+
+`Buildings/Building` + `BuildingSystem` (stats in `SimConfig.Buildings`, hunger in `SimConfig.Food`). A cabin is a one-tile building (`OccupantKind.Building`) on a walking area. It costs `BuildCost` to put up, `OperatingCostPerHour` while open (from an hour before the lifts open until the last lift closes) and `IngredientCostPerSale` per waffle, all booked under `LedgerCategory.FoodService`; sales go to `Food`. The player sets each cabin's price (`SetBuildingPriceCommand`) and can close it.
+
+Guests get hungrier through the day (`GuestPool.Hunger`, 0..100). Above `HungryThreshold`, whenever they choose what to do next (`DecideNext`, or peeling off a run toward a lift), they look for an open cabin in reach: within `FoodWalkRadius`, on the walking area they're standing on, or anywhere in the base village when they're at the base, with a line under `MaxWaitMinutes`. They buy only if the price is at most what they personally will pay (`BuildingSystem.PersonalMaxPrice`: everyone pays the fair price, nobody pays `MaxPrice`, hashed per guest so the answer is stable); otherwise the cabin counts them in `PricedOutToday`. They walk to the back of the line (`WalkingToFood`), wait (`WaitingForFood`; the window serves one every `ServiceMinutes`), pay, and eat nearby (`Eating`): hunger resets, energy comes back, and happiness rises by `HappinessFor(price)` (the boost at the fair price, up to 1.5x when cheap, down to 0.5x when dear). `WaffleCabinTests` cover placement, sales, price sensitivity and save/load.
 
 ### Road, parking and cars
 
-`Terrain/BaseLayout` places the starting base from the resort entrance: a half-disc walking plaza on the valley side, a parking lot beside it (stall rows either side of an aisle, four spaces per stall tile, 150 spaces by default) and an access road leaving along the aisle row, off the map edge and on into the scenery. The terrain generator flattens the lot and grades the road (no steeper than 10%), and the parking system builds the lot's spaces from the same layout.
+`Terrain/BaseLayout` places the starting base from the resort entrance: a half-disc walking plaza on the valley side, a parking lot beside it (stall rows either side of an aisle, four spaces per stall tile, 150 spaces by default) and an access road leaving along the aisle row, off the map edge and on through the scenery to the very edge of the world, so it never dead-ends in view. Cars drive in from there. The terrain generator flattens the lot and grades the road (no steeper than 10%), and the parking system builds the lot's spaces from the same layout.
 
 Guests come by car in parties of one to four (`ArrivalSystem`). `ParkingSystem.TryAdmitCar` takes the free space nearest the lodge, or turns the car away if every lot is full (counted in the ledger; costs a little reputation). A car drives in along `WorldState.RoadPath` and the aisle (`ParkingSpace.Timer` / `DriveTicks`); when it parks, its party steps out (`GuestPool.Car` records whose car is whose). Guests going home walk back to their car; when the last of the party has gone, the car drives out and frees the space. `ParkingSystem.TryGetCarPose` gives the view each car's position and heading from the same timer.
 
@@ -195,11 +202,13 @@ Game (GameBootstrap)
 ├── Contours        ContourRenderer      contour line meshes (toggle with C)
 ├── Lifts           LiftRenderer         static structures mesh + animated chairs mesh
 ├── Trail Lights    TrailLightRenderer   light poles, rebuilt when lights change or switch on
+├── Buildings       BuildingRenderer     Waffle Cabins, rebuilt when buildings change
 ├── Cars            CarRenderer          parked and moving cars, every frame
 ├── Guests          GuestRenderer        one dynamic mesh for every guest
 ├── Tool Preview    PreviewRenderer      always-on-top highlights for the active tool
 ├── Tools           ToolController       picking, hotkeys, active tool
-└── HUD             GameHud              OpenTTD-style toolbar, windows, status bar; map modes + minimap
+├── HUD             GameHud              OpenTTD-style toolbar, windows, status bar; map modes + minimap
+└── Art Hot Reload  ArtHotReload         reloads edited PNGs from StreamingAssets/Art while playing
 Main Camera         IsoCameraController
 ```
 
@@ -208,7 +217,8 @@ Main Camera         IsoCameraController
 * `IsoProjection` is the only code that knows the grid-to-world mapping (tile = 64x32 px, 1 unit = 32 px, 4 px per metre of height).
 * Every vertex gets a **Z from its grid diagonal** (`x + y`). With depth testing on, nearer terrain hides farther terrain automatically. For a heightfield seen from this fixed angle this ordering is exact, so there is no sort-key maintenance and no sorting bugs with towers, slopes or chairs (GDD risk #3).
 * Terrain is a mesh per chunk built straight from corner heights, so any slope shape works without hand-drawn slope tiles (GDD risk #4). Snow, ice and overlays are vertex colours.
-* All geometry uses one vertex-colour shader that also samples the **world atlas** (`Rendering/Art/WorldAtlas.cs`), a texture drawn procedurally at startup: no image files to import. Final colour = vertex colour x texel x 2, so the atlas's neutral texel (0.5) leaves plain shapes unchanged.
+* All geometry uses one vertex-colour shader that also samples the **world atlas** (`Rendering/Art/WorldAtlas.cs`), packed at startup from the art library. Final colour = vertex colour x texel x 2, so the atlas's neutral texel (0.5) leaves plain shapes unchanged.
+* **Editable art** (`ArtSheets`, `ArtLibrary`, `ArtHotReload`; guide in `docs/EditingArt.md`): every sprite sheet and ground texture is a PNG in `Assets/StreamingAssets/Art` (sheets have a JSON beside them with each sprite's rectangle and pivot). The code below draws the defaults; a PNG replaces them and a missing one falls back. The UI atlas (icons, font) loads the same way. Files are watched while playing and redrawn in place. `tools/SimHarness/ArtExport` writes the defaults without Unity and round-trip checks the loader.
   * **Ground textures** (`TerrainDetailArt`): powder with wind ripples and sparkle, corduroy laid down the fall line, tracked-out packed snow, lumpy crud, glassy ice, slush, rock poking through snow, and bare grass/dirt/rock/scree/water. Each tiles every 4x4 map tiles at 32 texels per tile; overlays switch them off.
   * **Sprites** (`SpriteArt`): spruce, fir and leafless hardwoods, singly or as stands of three (snow-laden when the ground under them has snow, bare when it doesn't; swapped by UV only when snow comes or goes), skiers in a few poses with a two-frame walk, and a carrier for each lift type. Each tree slot is one cut-out triangle with no normals, spread over the tile's quarters, so a thick forest stays cheap. The scenery ring is forested just as densely all the way to its edge.
   * **Lift structures** (`LiftArt`): pixel-art isometric huts and halls, elevated terminals for detachables and gondolas, towers (stretched to meet the cable), bullwheels and sheaves, per lift type. The up and down lines sit `LiftArt.LineOffset` either side of the centre line so passing carriers never overlap.
@@ -228,7 +238,7 @@ A tool (`ToolBase`) gets a `ToolContext` each frame (hovered tile and vertex, pr
 
 To add a tool, subclass `ToolBase` and add it to `ToolController.CreateTools()`.
 
-Area editors share `TileBrush`: a radius, a Paint / Erase mode (Shift flips it while held) and strokes collected from mouse down to mouse up, so a whole drag is validated live and applied as one command. The trail editor (`PaintRunTool`) paints new trails (Enter creates), adds strokes to a picked existing trail, and erases strokes from any trail; the walking-area editor (`WalkingAreaTool`) works the same way. Tools: 1 Inspect, 2 Build Lift, 3 Trail Editor, 4 Buy Land, 5 Terraform, 6 Clear Trees, 7 Walking Areas, 8 Trail Lights.
+Area editors share `TileBrush`: a radius, a Paint / Erase mode (Shift flips it while held) and strokes collected from mouse down to mouse up, so a whole drag is validated live and applied as one command. The trail editor (`PaintRunTool`) paints new trails (Enter creates), adds strokes to a picked existing trail, and erases strokes from any trail; the walking-area editor (`WalkingAreaTool`) works the same way. Tools: 1 Inspect, 2 Build Lift, 3 Trail Editor, 4 Buy Land, 5 Terraform, 6 Clear Trees, 7 Walking Areas, 8 Trail Lights, 9 Waffle Cabins.
 
 ## 4. How to add a new system (worked example: grooming, M4)
 
@@ -257,7 +267,7 @@ The same recipe works for snowmaking, buildings, staff and power/water.
 | Milestone | Status | Where it lives / will live |
 | --- | --- | --- |
 | M1 Prototype | Done | Everything above |
-| M2 Core loop | Done except building placement (rule ready: `Buildings/BuildingRules`) | `Land/`, `Runs/`, `Finance/`, `UI/`, `Walking/`, `Parking/` |
+| M2 Core loop | Done (buildings: Waffle Cabins) | `Land/`, `Runs/`, `Finance/`, `UI/`, `Walking/`, `Parking/` |
 | M3 Snow | v0 done (wear, melt, refreeze) | `Snow/SnowSystem.cs`; add wind drift next |
 | M4 Operations | Hooks only, plus trail lights / night skiing | `SnowSystem.Groom`, `OccupantKind.Building`, `GuestState.Eating/Warming`, `Lighting/` |
 | M5 Terrain and trees | Done (tools), effects partial | `Terrain/`, `Trees/`; tree shelter feeds wind drift in M3/M6 |

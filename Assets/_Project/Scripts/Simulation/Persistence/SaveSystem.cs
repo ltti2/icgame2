@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using IceCoast.Simulation.Buildings;
 using IceCoast.Simulation.Config;
 using IceCoast.Simulation.Core;
 using IceCoast.Simulation.Finance;
@@ -35,7 +36,8 @@ namespace IceCoast.Simulation.Persistence
         // v4: discrete lift carriers.
         // v5: night skiing switch, trail lights, per-tile surface (walking areas, road, parking), parking lots,
         //     the road, each guest's car, cars turned away in the ledger. Older saves get the default road and lot.
-        public const int CurrentVersion = 5;
+        // v6: buildings (Waffle Cabins) with their lines and sales.
+        public const int CurrentVersion = 6;
 
         public static void Save(GameSimulation sim, Stream output)
         {
@@ -107,6 +109,63 @@ namespace IceCoast.Simulation.Persistence
             WriteGuests(w, world.Guests);
             WriteLights(w, world.Lights);         // v5
             WriteParking(w, world.ParkingLots, world.RoadPath); // v5
+            w.Write(world.NextBuildingId);                       // v6
+            WriteBuildings(w, world.Buildings);
+        }
+
+        private static void WriteBuildings(BinaryWriter w, List<Building> buildings)
+        {
+            w.Write(buildings.Count);
+            foreach (var b in buildings)
+            {
+                w.Write(b.Id);
+                w.Write((byte)b.Type);
+                w.Write(b.Name ?? "");
+                WriteInt2(w, b.Origin);
+                w.Write(b.Width);
+                w.Write(b.Height);
+                w.Write(b.Price);
+                w.Write(b.PlayerOpen);
+                w.Write(b.ServiceTimer);
+                w.Write(b.SoldToday);
+                w.Write(b.RevenueToday);
+                w.Write(b.PricedOutToday);
+                w.Write(b.CostToday);
+                w.Write(b.SoldTotal);
+                w.Write(b.RevenueTotal);
+                w.Write(b.Queue.Count);
+                foreach (int g in b.Queue) w.Write(g);
+            }
+        }
+
+        private static void ReadBuildings(BinaryReader r, List<Building> buildings)
+        {
+            int n = r.ReadInt32();
+            buildings.Clear();
+            for (int i = 0; i < n; i++)
+            {
+                var b = new Building
+                {
+                    Id = r.ReadInt32(),
+                    Type = (BuildingType)r.ReadByte(),
+                    Name = r.ReadString(),
+                    Origin = ReadInt2(r),
+                    Width = r.ReadInt32(),
+                    Height = r.ReadInt32(),
+                    Price = r.ReadInt32(),
+                    PlayerOpen = r.ReadBoolean(),
+                    ServiceTimer = r.ReadInt32(),
+                    SoldToday = r.ReadInt32(),
+                    RevenueToday = r.ReadInt64(),
+                    PricedOutToday = r.ReadInt32(),
+                    CostToday = r.ReadInt64(),
+                    SoldTotal = r.ReadInt32(),
+                    RevenueTotal = r.ReadInt64(),
+                };
+                int queued = r.ReadInt32();
+                for (int k = 0; k < queued; k++) b.Queue.Add(r.ReadInt32());
+                buildings.Add(b);
+            }
         }
 
         private static void WriteLights(BinaryWriter w, List<TrailLight> lights)
@@ -358,9 +417,25 @@ namespace IceCoast.Simulation.Persistence
                 ReadLights(r, world.Lights);
                 ReadParking(r, world.ParkingLots, world.RoadPath);
             }
+            if (version >= 6)
+            {
+                world.NextBuildingId = r.ReadInt32();
+                ReadBuildings(r, world.Buildings);
+            }
 
             var sim = new GameSimulation(config, world);
             sim.ArrivalSystem.RestoreRate(arrivalRate);
+
+            // The starting road now runs to the edge of the world: lengthen it in saves that stopped short.
+            if (version >= 5 && world.RoadPath.Count == 2)
+            {
+                var road = sim.ParkingSystem.DefaultLayout().Road;
+                if (world.RoadPath[1].Equals(road[1]) && world.RoadPath[0].Y == road[0].Y && world.RoadPath[0].X != road[0].X)
+                {
+                    world.RoadPath[0] = road[0];
+                    world.ParkingVersion++;
+                }
+            }
 
             if (version < 5)
             {
@@ -372,6 +447,8 @@ namespace IceCoast.Simulation.Persistence
 
             foreach (var lift in world.Lifts)
             {
+                // Lift stats follow the config, so retuned speeds and capacities reach lifts built earlier.
+                sim.LiftSystem.ApplyDefinition(lift);
                 lift.EffectiveCapacityPerHour = sim.LiftSystem.EffectiveCapacity(lift);
                 // Pre-v4 saves had no carriers: start the next one at the current line position.
                 if (version < 4) lift.NextCarrier = (long)Math.Ceiling(lift.LineClock / sim.LiftSystem.CarrierInterval(lift));

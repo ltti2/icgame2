@@ -1,0 +1,22 @@
+{
+  "sheet": "tree_clusters",
+  "note": "Stands of three trees. Rows: spruce, fir, hardwood, each bare then snow-laden. Columns: two variants. Pivot: the base of the trunk. Each sprite's rectangle (x, y, w, h, from the top-left of the PNG) and pivot (inside the rectangle) are listed below. Draw inside the sprite's cell; drawing past its rectangle grows it. To shrink a sprite or move its pivot, edit the numbers here.",
+  "cellWidth": 29,
+  "cellHeight": 31,
+  "columns": 2,
+  "rows": 6,
+  "sprites": [
+    { "name": "cluster_spruce_0_bare", "col": 0, "row": 0, "x": 3, "y": 2, "w": 23, "h": 27, "pivotX": 11, "pivotY": 26 },
+    { "name": "cluster_spruce_1_bare", "col": 1, "row": 0, "x": 32, "y": 2, "w": 23, "h": 27, "pivotX": 11, "pivotY": 26 },
+    { "name": "cluster_spruce_0_snowy", "col": 0, "row": 1, "x": 3, "y": 33, "w": 23, "h": 27, "pivotX": 11, "pivotY": 26 },
+    { "name": "cluster_spruce_1_snowy", "col": 1, "row": 1, "x": 32, "y": 33, "w": 23, "h": 27, "pivotX": 11, "pivotY": 26 },
+    { "name": "cluster_fir_0_bare", "col": 0, "row": 2, "x": 2, "y": 68, "w": 25, "h": 23, "pivotX": 12, "pivotY": 22 },
+    { "name": "cluster_fir_1_bare", "col": 1, "row": 2, "x": 31, "y": 68, "w": 25, "h": 23, "pivotX": 12, "pivotY": 22 },
+    { "name": "cluster_fir_0_snowy", "col": 0, "row": 3, "x": 2, "y": 99, "w": 25, "h": 23, "pivotX": 12, "pivotY": 22 },
+    { "name": "cluster_fir_1_snowy", "col": 1, "row": 3, "x": 31, "y": 99, "w": 25, "h": 23, "pivotX": 12, "pivotY": 22 },
+    { "name": "cluster_hardwood_0_bare", "col": 0, "row": 4, "x": 2, "y": 131, "w": 25, "h": 22, "pivotX": 12, "pivotY": 21 },
+    { "name": "cluster_hardwood_1_bare", "col": 1, "row": 4, "x": 31, "y": 131, "w": 25, "h": 22, "pivotX": 12, "pivotY": 21 },
+    { "name": "cluster_hardwood_0_snowy", "col": 0, "row": 5, "x": 2, "y": 162, "w": 25, "h": 22, "pivotX": 12, "pivotY": 21 },
+    { "name": "cluster_hardwood_1_snowy", "col": 1, "row": 5, "x": 31, "y": 162, "w": 25, "h": 22, "pivotX": 12, "pivotY": 21 }
+  ]
+}

@@ -168,6 +168,7 @@ namespace IceCoast.Simulation.Guests
             pool.Money[g] = rng.Range(40, 300);
             pool.Lane[g] = rng.Range(-0.3f, 0.3f);
             pool.Happiness[g] = rng.Range(55f, 70f);
+            pool.Hunger[g] = (byte)rng.Range(0, Math.Max(1, _sim.Config.Food.StartingHungerMax + 1));
             pool.Car[g] = car;
             pool.Teleport(g, x, y);
 

@@ -14,6 +14,7 @@ namespace IceCoast.View.Input
         CycleOverlay, BrushSmaller, BrushBigger,
         QuickSave, QuickLoad, Modifier,
         ToggleContours,
+        Tool9,
     }
 
     /// <summary>
@@ -53,6 +54,7 @@ namespace IceCoast.View.Input
             new[] { Key.F9 },                      // QuickLoad
             new[] { Key.LeftShift, Key.RightShift }, // Modifier
             new[] { Key.C },                       // ToggleContours
+            new[] { Key.Digit9 },                  // Tool9
         };
 
         public static Vector2 MousePosition => Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
@@ -112,6 +114,7 @@ namespace IceCoast.View.Input
             new[] { KeyCode.F9 },
             new[] { KeyCode.LeftShift, KeyCode.RightShift },
             new[] { KeyCode.C },
+            new[] { KeyCode.Alpha9 },
         };
 
         public static Vector2 MousePosition => UnityEngine.Input.mousePosition;

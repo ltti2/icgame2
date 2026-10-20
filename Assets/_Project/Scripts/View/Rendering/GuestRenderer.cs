@@ -106,6 +106,7 @@ namespace IceCoast.View.Rendering
             switch (state)
             {
                 case GuestState.Queueing:
+                case GuestState.WaitingForFood:
                 {
                     // Mostly still, now and then shifting weight.
                     int beat = (int)(time * 0.8f + i * 0.37f);
@@ -118,6 +119,8 @@ namespace IceCoast.View.Rendering
                 case GuestState.Leaving:
                 case GuestState.Arriving:
                 case GuestState.Resting: // early birds wandering the base
+                case GuestState.WalkingToFood:
+                case GuestState.Eating: // strolling over to a spot to eat, then standing there
                     if (onSnow) return SkiPose(moving, sx, sy, out flip);
                     if (!moving) return SkierPose.SkiFront;
                     flip = sx < 0f;

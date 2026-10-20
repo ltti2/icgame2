@@ -155,6 +155,26 @@ namespace IceCoast.Simulation.Lifts
         public double CarrierInterval(Lift lift)
             => lift.CapacityPerHour <= 0 ? double.MaxValue : Seats(lift) * (double)_sim.TimeSystem.TicksPerHour / lift.CapacityPerHour;
 
+        /// <summary>
+        /// Brings a lift's speed and capacity in line with its type's current definition (after the config has
+        /// been retuned). The rope keeps its position; riders already aboard carry on from where they are, and the
+        /// next carrier starts at the current line position. Does nothing when the lift already matches.
+        /// </summary>
+        public void ApplyDefinition(Lift lift)
+        {
+            var def = _sim.Config.GetLift(lift.Type);
+            if (def.SpeedTilesPerMinute <= 0f || def.CapacityPerHour <= 0) return;
+            int rideTicks = Math.Max(1, (int)Math.Ceiling(lift.LengthTiles / def.SpeedTilesPerMinute * _sim.TimeSystem.TicksPerMinute));
+            if (lift.SpeedTilesPerMinute == def.SpeedTilesPerMinute && lift.CapacityPerHour == def.CapacityPerHour && lift.RideTicks == rideTicks)
+                return;
+
+            lift.SpeedTilesPerMinute = def.SpeedTilesPerMinute;
+            lift.CapacityPerHour = def.CapacityPerHour;
+            lift.RideTicks = rideTicks;
+            lift.NextCarrier = (long)Math.Ceiling(lift.LineClock / CarrierInterval(lift));
+            _sim.World.LiftsVersion++;
+        }
+
         /// <summary>Guests per hour carried from a long line, allowing for seats that go unfilled.</summary>
         public float EffectiveCapacity(Lift lift)
         {

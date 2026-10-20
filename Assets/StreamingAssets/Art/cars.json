@@ -1,0 +1,22 @@
+{
+  "sheet": "cars",
+  "note": "Rows: paint jobs. Columns: boot toward the camera, bonnet toward the camera. Cars point along grid x; the game mirrors them for grid y. Pivot: the middle of the car on the ground. Each sprite's rectangle (x, y, w, h, from the top-left of the PNG) and pivot (inside the rectangle) are listed below. Draw inside the sprite's cell; drawing past its rectangle grows it. To shrink a sprite or move its pivot, edit the numbers here.",
+  "cellWidth": 30,
+  "cellHeight": 24,
+  "columns": 2,
+  "rows": 6,
+  "sprites": [
+    { "name": "car_0_tail", "col": 0, "row": 0, "x": 2, "y": 2, "w": 26, "h": 20, "pivotX": 13, "pivotY": 13 },
+    { "name": "car_0_nose", "col": 1, "row": 0, "x": 32, "y": 2, "w": 26, "h": 20, "pivotX": 13, "pivotY": 13 },
+    { "name": "car_1_tail", "col": 0, "row": 1, "x": 2, "y": 26, "w": 26, "h": 20, "pivotX": 13, "pivotY": 13 },
+    { "name": "car_1_nose", "col": 1, "row": 1, "x": 32, "y": 26, "w": 26, "h": 20, "pivotX": 13, "pivotY": 13 },
+    { "name": "car_2_tail", "col": 0, "row": 2, "x": 2, "y": 50, "w": 26, "h": 20, "pivotX": 13, "pivotY": 13 },
+    { "name": "car_2_nose", "col": 1, "row": 2, "x": 32, "y": 50, "w": 26, "h": 20, "pivotX": 13, "pivotY": 13 },
+    { "name": "car_3_tail", "col": 0, "row": 3, "x": 2, "y": 74, "w": 26, "h": 20, "pivotX": 13, "pivotY": 13 },
+    { "name": "car_3_nose", "col": 1, "row": 3, "x": 32, "y": 74, "w": 26, "h": 20, "pivotX": 13, "pivotY": 13 },
+    { "name": "car_4_tail", "col": 0, "row": 4, "x": 2, "y": 98, "w": 26, "h": 20, "pivotX": 13, "pivotY": 13 },
+    { "name": "car_4_nose", "col": 1, "row": 4, "x": 32, "y": 98, "w": 26, "h": 20, "pivotX": 13, "pivotY": 13 },
+    { "name": "car_5_tail", "col": 0, "row": 5, "x": 2, "y": 122, "w": 26, "h": 20, "pivotX": 13, "pivotY": 13 },
+    { "name": "car_5_nose", "col": 1, "row": 5, "x": 32, "y": 122, "w": 26, "h": 20, "pivotX": 13, "pivotY": 13 }
+  ]
+}

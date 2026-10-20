@@ -30,8 +30,12 @@ namespace IceCoast.View.Rendering
             mr.sharedMaterial = RenderMaterials.Opaque;
             mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             _runner.SimulationChanged += sim => { _sim = sim; _builtVersion = -1; };
+            WorldAtlas.LayoutChanged += OnAtlasLayoutChanged;
             _sim = _runner.Sim;
         }
+
+        private void OnAtlasLayoutChanged() => _builtVersion = -1;
+        private void OnDestroy() => WorldAtlas.LayoutChanged -= OnAtlasLayoutChanged;
 
         private void LateUpdate()
         {

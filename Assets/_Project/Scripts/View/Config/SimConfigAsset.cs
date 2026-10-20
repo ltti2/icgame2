@@ -26,6 +26,8 @@ namespace IceCoast.View.Config
             if (Config.Parking == null) Config.Parking = new SimConfig.ParkingSettings();
             if (Config.Parking.PartySizeWeights == null || Config.Parking.PartySizeWeights.Length == 0) Config.Parking.PartySizeWeights = new[] { 25f, 40f, 15f, 20f };
             if (Config.Walking == null) Config.Walking = new SimConfig.WalkingSettings();
+            if (Config.Food == null) Config.Food = new SimConfig.FoodSettings();
+            if (Config.Buildings == null || Config.Buildings.Length == 0) Config.Buildings = SimConfig.DefaultBuildings();
             Config.Parking.DefaultLotCapacity = Mathf.Clamp(Config.Parking.DefaultLotCapacity, 1, 1024);
             Config.Map.Width = Mathf.Max(32, Config.Map.Width / 32 * 32);
             Config.Map.Height = Mathf.Max(32, Config.Map.Height / 32 * 32);
