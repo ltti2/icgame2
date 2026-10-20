@@ -1,0 +1,78 @@
+README.md
+
+# Unity generated
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+/[Aa]sset[Ss]tore[Tt]ools*/
+
+# Unity crash reports and profiling
+sysinfo.txt
+*.stackdump
+
+# IDE - Visual Studio
+.vs/
+.vscode/
+*.csproj
+*.sln
+*.suo
+*.tmp_proj
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.sln.docstates
+*.csproj.user
+.vsconfig
+
+# IDE - VS Code
+.vscode/
+
+# IDE - JetBrains Rider / IntelliJ
+.idea/
+*.sln.iml
+
+# .NET / Gradle
+.gradle/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+Desktop.ini
+
+# Crash reports and builds
+crashlytics-build.properties
+*.apk
+*.aab
+*.app
+*.unitypackage
+
+# Temporary files and logs
+*.log
+*.bak
+*.swp
+*.swo
+*.orig
+*.cache
+
+# Keep the headless harness projects
+!/tools/**/*.csproj
+
+# .NET build output of the harness
+/tools/**/bin/
+/tools/**/obj/

@@ -1,0 +1,255 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 345632168ac4fc168a3cd94281669f13, type: 3}
+  m_Name: SandboxSimConfig
+  m_EditorClassIdentifier: IceCoast.View::IceCoast.View.Config.SimConfigAsset
+  Config:
+    Map:
+      Width: 512
+      Height: 512
+      ParcelSize: 64
+      Seed: 12345
+      SceneryPadding: 160
+    Time:
+      TicksPerGameMinute: 10
+      LiftsOpenMinute: 540
+      LiftsCloseMinute: 960
+      ArrivalsStartMinute: 480
+      ArrivalsEndMinute: 780
+      StartMinuteOfDay: 450
+    Terrain:
+      TileSizeMeters: 10
+      MetersPerHeightStep: 1
+      MaxStepPerEdge: 8
+      BaseElevationSteps: 60
+      SummitElevationSteps: 900
+      TreelineSteps: 720
+      TerraformCostPerStepDirt: 40
+      TerraformCostPerStepRock: 250
+      TreeClearCostPerDensity: 30
+      LumberIncomePerDensity: 8
+    Economy:
+      StartingCash: 60000
+      StartingTicketPrice: 35
+      StartingReputation: 30
+      BaseDemandPerHour: 160
+      BaseFairPrice: 20
+      FairPricePerRunTile: 0.01
+      FairPriceMax: 220
+      PriceElasticity: 1.3
+      WeekendDemandMultiplier: 1.6
+      HolidayDemandMultiplier: 2
+      DailyFixedCost: 600
+      ReputationGainRate: 0.08
+      ReputationMax: 100
+      BankruptcyGraceDays: 14
+    Guests:
+      MaxGuests: 4000
+      SkiSpeedTilesPerMinute: 4
+      WalkSpeedTilesPerMinute: 1.5
+      SkillWeights:
+      - 15
+      - 25
+      - 30
+      - 18
+      - 9
+      - 3
+      MinStayMinutes: 150
+      MaxStayMinutes: 420
+      LiftSearchRadius: 60
+      RunConnectRadius: 4
+      ChoiceRandomness: 0.35
+      InjuryBaseChancePerTile: 0.00002
+      InjuryGapExponent: 2.6
+      FallChancePerTile: 0.0008
+      NeedsUpdateIntervalTicks: 10
+    Runs:
+      MinRunTiles: 4
+      UphillPenalty: 6
+      AvgSlopeLimits:
+      - 12
+      - 25
+      - 40
+      - 50
+      MaxSlopeLimits:
+      - 18
+      - 35
+      - 55
+      - 70
+      FlatGrade: 4
+      UphillSpeedFactor: 0.5
+    Snow:
+      UpdateIntervalTicks: 60
+      InitialBaseDepthCm: 35
+      InitialSummitDepthCm: 110
+      MeltCmPerDegreeHour: 0.25
+      SouthAspectMeltBonus: 0.6
+      CompactionPerSkier: 2
+      CrudThreshold: 40
+      PackedThreshold: 110
+      IceThreshold: 225
+      BareDepthCm: 5
+    Weather:
+      LapseRateCPerMeter: 0.0065
+      BaseElevationMeters: 300
+      MinStateHours: 4
+      MaxStateHours: 30
+      ForecastLength: 4
+    Lifts:
+    - Type: 0
+      DisplayName: Rope Tow
+      CapacityPerHour: 200
+      SeatsPerCarrier: 1
+      LoadingEfficiency: 1
+      SpeedTilesPerMinute: 3
+      BaseCost: 12000
+      CostPerTile: 120
+      OperatingCostPerHour: 35
+      MinLengthTiles: 6
+      MaxLengthTiles: 45
+      MaxGradePercent: 30
+      TowerSpacingTiles: 10
+      CableHeightMeters: 1
+      PowerDrawKw: 15
+      StaffRequired: 1
+      WindLimitKmh: 90
+      Comfort: 0.2
+      WeatherProtected: 0
+      CanTurn: 0
+      RequiredReputation: 0
+    - Type: 1
+      DisplayName: Magic Carpet
+      CapacityPerHour: 300
+      SeatsPerCarrier: 1
+      LoadingEfficiency: 1
+      SpeedTilesPerMinute: 1.5
+      BaseCost: 20000
+      CostPerTile: 400
+      OperatingCostPerHour: 30
+      MinLengthTiles: 3
+      MaxLengthTiles: 15
+      MaxGradePercent: 15
+      TowerSpacingTiles: 0
+      CableHeightMeters: 0
+      PowerDrawKw: 10
+      StaffRequired: 1
+      WindLimitKmh: 120
+      Comfort: 0.5
+      WeatherProtected: 0
+      CanTurn: 0
+      RequiredReputation: 10
+    - Type: 2
+      DisplayName: T-Bar
+      CapacityPerHour: 600
+      SeatsPerCarrier: 2
+      LoadingEfficiency: 0.8
+      SpeedTilesPerMinute: 5
+      BaseCost: 110000
+      CostPerTile: 600
+      OperatingCostPerHour: 70
+      MinLengthTiles: 15
+      MaxLengthTiles: 140
+      MaxGradePercent: 45
+      TowerSpacingTiles: 12
+      CableHeightMeters: 4
+      PowerDrawKw: 60
+      StaffRequired: 2
+      WindLimitKmh: 80
+      Comfort: 0.3
+      WeatherProtected: 0
+      CanTurn: 0
+      RequiredReputation: 35
+    - Type: 3
+      DisplayName: Fixed-Grip Chair
+      CapacityPerHour: 1000
+      SeatsPerCarrier: 3
+      LoadingEfficiency: 0.8
+      SpeedTilesPerMinute: 8
+      BaseCost: 550000
+      CostPerTile: 2500
+      OperatingCostPerHour: 160
+      MinLengthTiles: 30
+      MaxLengthTiles: 220
+      MaxGradePercent: 80
+      TowerSpacingTiles: 8
+      CableHeightMeters: 9
+      PowerDrawKw: 250
+      StaffRequired: 3
+      WindLimitKmh: 65
+      Comfort: 0.55
+      WeatherProtected: 0
+      CanTurn: 0
+      RequiredReputation: 50
+    - Type: 4
+      DisplayName: Detachable Chair
+      CapacityPerHour: 2000
+      SeatsPerCarrier: 4
+      LoadingEfficiency: 0.85
+      SpeedTilesPerMinute: 12
+      BaseCost: 2400000
+      CostPerTile: 6000
+      OperatingCostPerHour: 380
+      MinLengthTiles: 40
+      MaxLengthTiles: 300
+      MaxGradePercent: 80
+      TowerSpacingTiles: 8
+      CableHeightMeters: 10
+      PowerDrawKw: 600
+      StaffRequired: 4
+      WindLimitKmh: 60
+      Comfort: 0.7
+      WeatherProtected: 0
+      CanTurn: 0
+      RequiredReputation: 70
+    - Type: 5
+      DisplayName: Bubble Chair
+      CapacityPerHour: 2200
+      SeatsPerCarrier: 6
+      LoadingEfficiency: 0.85
+      SpeedTilesPerMinute: 12
+      BaseCost: 3400000
+      CostPerTile: 8000
+      OperatingCostPerHour: 420
+      MinLengthTiles: 40
+      MaxLengthTiles: 300
+      MaxGradePercent: 80
+      TowerSpacingTiles: 8
+      CableHeightMeters: 10
+      PowerDrawKw: 650
+      StaffRequired: 4
+      WindLimitKmh: 70
+      Comfort: 0.85
+      WeatherProtected: 1
+      CanTurn: 0
+      RequiredReputation: 78
+    - Type: 6
+      DisplayName: Gondola
+      CapacityPerHour: 1600
+      SeatsPerCarrier: 8
+      LoadingEfficiency: 0.75
+      SpeedTilesPerMinute: 10
+      BaseCost: 6000000
+      CostPerTile: 12000
+      OperatingCostPerHour: 600
+      MinLengthTiles: 60
+      MaxLengthTiles: 500
+      MaxGradePercent: 100
+      TowerSpacingTiles: 14
+      CableHeightMeters: 18
+      PowerDrawKw: 900
+      StaffRequired: 5
+      WindLimitKmh: 75
+      Comfort: 0.95
+      WeatherProtected: 1
+      CanTurn: 1
+      RequiredReputation: 85
+    SandboxMode: 1

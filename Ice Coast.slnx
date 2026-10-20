@@ -1,0 +1,6 @@
+﻿<Solution>
+  <Project Path="IceCoast.Simulation.csproj" />
+  <Project Path="IceCoast.View.csproj" />
+  <Project Path="IceCoast.Tests.EditMode.csproj" />
+  <Project Path="IceCoast.Editor.csproj" />
+</Solution>

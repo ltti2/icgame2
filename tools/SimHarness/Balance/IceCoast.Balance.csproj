@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Headless balance runner: simulates whole days without Unity and prints the books.
+       Usage: dotnet run -c Release (args: days seed, plus optional small and wear flags) -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../IceCoast.Simulation.csproj" />
+    <Compile Include="../../../Assets/_Project/Tests/EditMode/TestGames.cs" />
+    <Compile Include="BalanceRunner.cs" />
+  </ItemGroup>
+</Project>
